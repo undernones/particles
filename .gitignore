@@ -5,3 +5,7 @@ Makefile
 
 # binaries
 headless
+
+hours.txt
+
+*.a

@@ -35,13 +35,21 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
     add_definitions(-DNDEBUG)
 endif ()
 
+set (PHYSICS_SRC
+    lib/physics/Obstacle.cpp
+    lib/physics/PlaneObstacle.cpp
+    lib/physics/SoftBody.cpp
+)
+add_library(physics ${PHYSICS_SRC})
+target_link_libraries(physics ${LIBS})
+
 set (CORE_SRC
     Options.cpp
     Utils.cpp
 )
 
 add_executable(headless main.cpp ${CORE_SRC})
-target_link_libraries(headless ${LIBS})
+target_link_libraries(headless physics ${LIBS})
 
 
 message(STATUS)
