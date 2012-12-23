@@ -32,6 +32,16 @@ zero(std::vector<T>& list)
     for_each (list.begin(), list.end(), [](T& x) { x.setZero(); });
 }
 
+void
+identity(SoftBody::MatrixList& matrices)
+{
+    for_each (
+        matrices.begin(),
+        matrices.end(),
+        [](Matrix3d& m) { m.setIdentity(); }
+    );
+}
+
 }
 
 SoftBody::SoftBody(const std::string& positionsFile, const Material& material)
@@ -39,26 +49,33 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material)
     if (!load(positionsFile, mPosRest)) {
         return; // TODO: Throw exception?
     }
-    
-    mMasses.resize(mPosRest.size());
 
     mPosWorld.resize(mPosRest.size());
     auto u = mPosRest.begin();
     for (auto& x : mPosWorld) {
         x = *u;
     }
+    
+    mMasses.resize(mPosRest.size());
 
     mVelocities.resize(mPosRest.size());
     zero(mVelocities);
 
     mForces.resize(mPosRest.size());
+
     mNeighborhoods.resize(mPosRest.size());
-    for (auto& neighborhood : mNeighborhoods) {
-        neighborhood.resize(16);
+    for (auto& n : mNeighborhoods) {
+        n.resize(16);
     }
+
     mDefs.resize(mPosRest.size());
+    identity(mDefs);
+
     mStrains.resize(mPosRest.size());
+    zero(mStrains);
+
     mStresses.resize(mPosRest.size());
+    zero(mStresses);
 }
 
 SoftBody::~SoftBody()

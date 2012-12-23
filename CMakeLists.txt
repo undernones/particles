@@ -14,6 +14,7 @@ endif()
 
 include_directories(
     .
+    lib
     /opt/local/include/eigen3/Eigen
     /opt/local/include
     /usr/local/include
@@ -46,8 +47,8 @@ target_link_libraries(physics ${LIBS})
 set (CORE_SRC
     Options.cpp
     Utils.cpp
+    World.cpp
 )
-
 add_executable(headless main.cpp ${CORE_SRC})
 target_link_libraries(headless physics ${LIBS})
 
