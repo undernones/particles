@@ -12,4 +12,8 @@ World::addSoftBody(SoftBody* body)
 void
 World::step(double dt)
 {
+    for (auto& body : sBodies) {
+        body->clearForces();
+        body->computeInternalForces();
+    }
 }

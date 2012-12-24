@@ -27,14 +27,25 @@ public:
 
     void clearForces();
     void computeInternalForces();
+    void updateRestQuantities();
 
 private:
-    VectorList mMasses;
+    struct Neighbor
+    {
+        uint32_t index;
+        double w;
+    };
+    typedef std::vector<Neighbor> Neighborhood;
+
+    MatrixList mBases;
     VectorList mPosWorld;
     VectorList mPosRest;
     VectorList mVelocities;
     VectorList mForces;
-    std::vector< std::vector<uint32_t> > mNeighborhoods;
+    std::vector<double> mMasses;
+    std::vector<double> mVolumes;
+    std::vector<double> mRadii;
+    std::vector<Neighborhood> mNeighborhoods;
     MatrixList mDefs;
     MatrixList mStrains;
     MatrixList mStresses;

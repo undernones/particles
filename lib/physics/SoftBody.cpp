@@ -1,5 +1,6 @@
 #include "SoftBody.h"
 #include <fstream>
+#include "kernels.h"
 
 using Eigen::Vector3d;
 using Eigen::Matrix3d;
@@ -50,35 +51,97 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material)
         return; // TODO: Throw exception?
     }
 
-    mPosWorld.resize(mPosRest.size());
+    uint32_t size = mPosRest.size();
+
+    mPosWorld.resize(size);
     auto u = mPosRest.begin();
     for (auto& x : mPosWorld) {
         x = *u;
     }
     
-    mMasses.resize(mPosRest.size());
+    mBases.resize(size);
+    identity(mBases);
 
-    mVelocities.resize(mPosRest.size());
+    mVelocities.resize(size);
     zero(mVelocities);
 
-    mForces.resize(mPosRest.size());
+    mForces.resize(size);
 
-    mNeighborhoods.resize(mPosRest.size());
+    mMasses.resize(size);
+    mVolumes.resize(size);
+
+    mNeighborhoods.resize(size);
     for (auto& n : mNeighborhoods) {
-        n.resize(16);
+        n.reserve(16);
     }
 
-    mDefs.resize(mPosRest.size());
+    mDefs.resize(size);
     identity(mDefs);
 
-    mStrains.resize(mPosRest.size());
+    mStrains.resize(size);
     zero(mStrains);
 
-    mStresses.resize(mPosRest.size());
+    mStresses.resize(size);
     zero(mStresses);
 }
 
 SoftBody::~SoftBody()
+{
+}
+
+void
+SoftBody::clearForces()
+{
+    zero(mForces);
+}
+
+void
+SoftBody::computeInternalForces()
+{
+    computeFs();
+    computeStrains();
+    computeStresses();
+    computeForces();
+}
+
+void
+SoftBody::updateRestQuantities()
+{
+    auto x_it = mPosWorld.begin();
+    auto u_it = mPosRest.begin();
+    auto n_it = mNeighborhoods.begin();
+    auto r_it = mRadii.begin();
+    for (auto& basis : mBases) {
+        basis.setZero();
+        for (auto& neighbor : *n_it) {
+            double distance = (*u_it - mPosRest[neighbor.index]).norm();
+            neighbor.w = Kernels::standardkernel(*r_it, distance);
+        }
+
+        ++x_it;
+        ++u_it;
+        ++n_it;
+        ++r_it;
+    }
+}
+
+void
+SoftBody::computeFs()
+{
+}
+
+void
+SoftBody::computeStrains()
+{
+}
+
+void
+SoftBody::computeStresses()
+{
+}
+
+void
+SoftBody::computeForces()
 {
 }
 

@@ -45,6 +45,7 @@ add_library(physics ${PHYSICS_SRC})
 target_link_libraries(physics ${LIBS})
 
 set (CORE_SRC
+    KdTree.cpp
     Options.cpp
     Utils.cpp
     World.cpp
