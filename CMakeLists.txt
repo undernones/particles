@@ -36,22 +36,29 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
     add_definitions(-DNDEBUG)
 endif ()
 
+set (GEOM_SRC
+    lib/geom/KdTree.cpp
+    lib/geom/Neighbor.cpp
+    lib/geom/Neighborhood.cpp
+)
+add_library(geom ${GEOM_SRC})
+target_link_libraries(geom ${LIBS})
+
 set (PHYSICS_SRC
     lib/physics/Obstacle.cpp
     lib/physics/PlaneObstacle.cpp
     lib/physics/SoftBody.cpp
 )
 add_library(physics ${PHYSICS_SRC})
-target_link_libraries(physics ${LIBS})
+target_link_libraries(physics geom ${LIBS})
 
 set (CORE_SRC
-    KdTree.cpp
     Options.cpp
     Utils.cpp
     World.cpp
 )
 add_executable(headless main.cpp ${CORE_SRC})
-target_link_libraries(headless physics ${LIBS})
+target_link_libraries(headless physics geom ${LIBS})
 
 
 message(STATUS)

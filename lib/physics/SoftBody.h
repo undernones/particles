@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <Eigen>
+#include <geom/Neighborhood.h>
 #include "Material.h"
 
 class SoftBody
@@ -27,16 +28,10 @@ public:
 
     void clearForces();
     void computeInternalForces();
+    void updateNeighborhoods();
     void updateRestQuantities();
 
 private:
-    struct Neighbor
-    {
-        uint32_t index;
-        double w;
-    };
-    typedef std::vector<Neighbor> Neighborhood;
-
     MatrixList mBases;
     VectorList mPosWorld;
     VectorList mPosRest;

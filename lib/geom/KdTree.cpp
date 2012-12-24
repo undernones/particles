@@ -34,7 +34,7 @@ IntDoublePairCompare (const IntDoublePair& p1, const IntDoublePair& p2)
     return (p1.d() < p2.d());
 }
 
-KDTree::KDTree(const PointList& points)
+KdTree::KdTree(const PointList& points)
 {
     std::vector<IntDoublePair> xSortedList;
     std::vector<IntDoublePair> ySortedList;
@@ -84,7 +84,7 @@ KDTree::KDTree(const PointList& points)
 // coordinates.
 
 void
-KDTree::xsplit(
+KdTree::xsplit(
     const PointList& points,
     std::vector<IntDoublePair>& xSortedList, 
     std::vector<IntDoublePair>& ySortedList, 
@@ -192,7 +192,7 @@ KDTree::xsplit(
 }
 
 void
-KDTree::ysplit(
+KdTree::ysplit(
     const PointList& points,
     std::vector<IntDoublePair>& xSortedList, 
     std::vector<IntDoublePair>& ySortedList, 
@@ -299,7 +299,7 @@ KDTree::ysplit(
 }
 
 void
-KDTree::zsplit(
+KdTree::zsplit(
     const PointList& points,
     std::vector<IntDoublePair>& xSortedList, 
     std::vector<IntDoublePair>& ySortedList, 
@@ -461,7 +461,7 @@ heapAdd (std::vector<unsigned>& heap, const double* distCache, int x)
 }
 
 void
-KDTree::neighbors(
+KdTree::neighbors(
     const PointList& points,
     const Point& p,
     int num,
@@ -486,7 +486,7 @@ KDTree::neighbors(
 
 
 int
-KDTree::neighbor(const PointList& points, const Point& p, double r)
+KdTree::neighbor(const PointList& points, const Point& p, double r)
 {
     int neighbor = -1;
     double ndist = DBL_MAX;
@@ -500,7 +500,7 @@ KDTree::neighbor(const PointList& points, const Point& p, double r)
 }
 
 void
-KDTree::neighborsRecurse(
+KdTree::neighborsRecurse(
     const PointList& points,
     const Point& p, 
     unsigned num,
@@ -549,7 +549,7 @@ KDTree::neighborsRecurse(
 }
 
 void
-KDTree::neighborsRecurse(
+KdTree::neighborsRecurse(
     const PointList& points,
     const Point& p,
     unsigned num,
@@ -587,7 +587,7 @@ KDTree::neighborsRecurse(
 }
 
 void
-KDTree::neighborsRecurse(
+KdTree::neighborsRecurse(
     const PointList& points,
     const Point& p,
     double r, double r2,
@@ -621,7 +621,7 @@ KDTree::neighborsRecurse(
 }
 
 void
-KDTree::neighborRecurse(
+KdTree::neighborRecurse(
     const PointList& points,
     const Point& p, double r, double r2, 
     int& neighbor, double& ndist, int start, int end, int plane)
@@ -668,7 +668,7 @@ KDTree::neighborRecurse(
 }
 
 void
-KDTree::neighborRecurse(
+KdTree::neighborRecurse(
     const PointList& points,
     const Point& p,  
     int& neighbor, double& ndist,

@@ -1,5 +1,6 @@
 #include "SoftBody.h"
 #include <fstream>
+#include <geom/KdTree.h>
 #include "kernels.h"
 
 using Eigen::Vector3d;
@@ -71,9 +72,6 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material)
     mVolumes.resize(size);
 
     mNeighborhoods.resize(size);
-    for (auto& n : mNeighborhoods) {
-        n.reserve(16);
-    }
 
     mDefs.resize(size);
     identity(mDefs);
@@ -104,6 +102,92 @@ SoftBody::computeInternalForces()
     computeForces();
 }
 
+//bool
+//neighborhoodHasJ(const SoftBody::Neighborhood& neighborhood, uint32_t j)
+//{
+//    return false;
+//}
+
+void
+SoftBody::updateNeighborhoods()
+{
+    auto kdTree = KdTree(mPosRest);
+
+    std::vector<uint32_t> indices;
+    indices.reserve(Neighborhood::MAX_SIZE + 1);
+
+    auto neighbor_it = mNeighborhoods.begin();
+    auto radius_it = mRadii.begin();
+    uint32_t index = 0;
+    for (auto& u : mPosRest) {
+        //
+        // A particle's neighborhood should not include itself. However, this
+        // kdTree will return an index for the current particle. So increment
+        // the neighbor count by 1, and then remove the "self" particle when
+        // we're done.
+        //
+
+        kdTree.neighbors(mPosRest, u, Neighborhood::MAX_SIZE + 1, *radius_it, indices);
+        auto selfLocation = std::find(indices.begin(), indices.end(), index);
+        if (selfLocation != indices.end()) {
+            indices.erase(selfLocation);
+        }
+
+        // If we find a neighbor we didn't already have, add it with an initial
+        // weight of zero.
+        //
+
+        Neighborhood newNeighbors;
+
+        for (auto j : indices) {
+            if (neighbor_it->hasNeighbor(j)) {
+                newNeighbors.push_back(neighbor_it->findNeighbor(j));
+            } else {
+                Vector3d u_ij = mPosRest[j] - u;
+                Neighbor n(j, u_ij, 0.0);
+                newNeighbors.push_back(n);
+            }
+        }
+
+        ++neighbor_it;
+        ++radius_it;
+        ++index;
+    }
+
+    /*
+    BOOST_FOREACH (Particle &p, mParticles) {
+
+        mKdTree->neighbors(*this, p, neighborCount + 1, p.radius, indices);
+        std::vector<unsigned>::iterator loc = std::find(indices.begin(), indices.end(), p.index);
+        if (loc != indices.end()) {
+            indices.erase(loc);
+        }
+
+
+        // If we find a neighbor we didn't already have, add it with an initial
+        // weight of 0.
+        //
+
+        std::vector<Neighbor> newNeighbors;
+        newNeighbors.reserve(neighborCount);
+
+        BOOST_FOREACH (unsigned j, indices) {
+            if (p.hasNeighbor(j)) {
+                newNeighbors.push_back(p.findNeighbor(j));
+            } else {
+                SlVector3 u(mParticles[j].materialPos - p.materialPos);
+                newNeighbors.push_back(Neighbor(j, u));
+            }
+        }
+
+        //if (!areEqual(p.neighbors, newNeighbors)) {
+        //    std::cout << "Neighbors changed for particle " << p.index << std::endl;
+        //}
+        p.neighbors = newNeighbors;
+    }
+    */
+}
+
 void
 SoftBody::updateRestQuantities()
 {
@@ -118,6 +202,13 @@ SoftBody::updateRestQuantities()
             neighbor.w = Kernels::standardkernel(*r_it, distance);
         }
 
+
+
+        /*
+    BOOST_FOREACH (Particle &p, mParticles){
+        BOOST_FOREACH (Neighbor &n, p.neighbors){
+            n.w_ij = Kernels::standardkernel(p.radius, mag(n.u));
+        */
         ++x_it;
         ++u_it;
         ++n_it;

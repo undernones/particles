@@ -23,8 +23,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef KDTREE_H
-#define KDTREE_H
+#ifndef GEOM_KDTREE_H
+#define GEOM_KDTREE_H
 
 #include <vector>
 #include <Eigen>
@@ -45,7 +45,7 @@ public:
 	inline double &d() {return _d;}
 };
 	
-class KDTree
+class KdTree
 {
 private:
     typedef Eigen::Vector3d Point;
@@ -54,8 +54,8 @@ private:
 public:
 	// Initialize kdtree for point in pts.  The points are *not* duplicated.
     // The tree only stores indices into this set of points.
-	KDTree(const PointList& points);
-	~KDTree() {delete [] tree; delete [] distCache;}
+	KdTree(const PointList& points);
+	~KdTree() {delete [] tree; delete [] distCache;}
 
 	// Return the num nearest neighbors within distance r of the query point.
     // If r <= 0, returns the num nearest neighbors.
@@ -113,4 +113,4 @@ private:
                          int start, int end, int plane);
 };
 
-#endif // KDTREE_H
+#endif // GEOM_KDTREE_H
