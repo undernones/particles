@@ -10,7 +10,7 @@ int disable_chkpts = 0;
 int start_paused = 0;
 std::string OPT_framesDir("frames");
 std::string OPT_restoreFile(INVALID_FILE);
-std::string OPT_particleFile("meshes/tet.mesh");
+std::string OPT_particleFile("samples/pig.txt");
 double OPT_dt = 1.0 / 120;
 uint32_t OPT_fps = 30;
 double OPT_duration = 10;

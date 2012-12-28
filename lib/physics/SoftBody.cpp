@@ -70,6 +70,7 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material)
 
     mMasses.resize(size);
     mVolumes.resize(size);
+    mRadii.resize(size);
 
     mNeighborhoods.resize(size);
 
@@ -81,6 +82,9 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material)
 
     mStresses.resize(size);
     zero(mStresses);
+
+    updateNeighborhoods();
+    updateRestQuantities();
 }
 
 SoftBody::~SoftBody()
@@ -101,12 +105,6 @@ SoftBody::computeInternalForces()
     computeStresses();
     computeForces();
 }
-
-//bool
-//neighborhoodHasJ(const SoftBody::Neighborhood& neighborhood, uint32_t j)
-//{
-//    return false;
-//}
 
 void
 SoftBody::updateNeighborhoods()
@@ -148,44 +146,12 @@ SoftBody::updateNeighborhoods()
                 newNeighbors.push_back(n);
             }
         }
+        *neighbor_it = newNeighbors;
 
         ++neighbor_it;
         ++radius_it;
         ++index;
     }
-
-    /*
-    BOOST_FOREACH (Particle &p, mParticles) {
-
-        mKdTree->neighbors(*this, p, neighborCount + 1, p.radius, indices);
-        std::vector<unsigned>::iterator loc = std::find(indices.begin(), indices.end(), p.index);
-        if (loc != indices.end()) {
-            indices.erase(loc);
-        }
-
-
-        // If we find a neighbor we didn't already have, add it with an initial
-        // weight of 0.
-        //
-
-        std::vector<Neighbor> newNeighbors;
-        newNeighbors.reserve(neighborCount);
-
-        BOOST_FOREACH (unsigned j, indices) {
-            if (p.hasNeighbor(j)) {
-                newNeighbors.push_back(p.findNeighbor(j));
-            } else {
-                SlVector3 u(mParticles[j].materialPos - p.materialPos);
-                newNeighbors.push_back(Neighbor(j, u));
-            }
-        }
-
-        //if (!areEqual(p.neighbors, newNeighbors)) {
-        //    std::cout << "Neighbors changed for particle " << p.index << std::endl;
-        //}
-        p.neighbors = newNeighbors;
-    }
-    */
 }
 
 void
