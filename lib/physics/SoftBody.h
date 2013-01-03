@@ -36,6 +36,8 @@ public:
     void updateRadii();
     void updateRestQuantities();
 
+    inline size_t size() const { return bases.size(); }
+
 private:
     Material mMaterial;
 

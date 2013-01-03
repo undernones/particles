@@ -2,6 +2,7 @@
 #include <GLUT/glut.h>
 #include <QtGui/QMouseEvent>
 #include <physics/SoftBody.h>
+#include <iostream>
 
 using Eigen::Vector3d;
 
@@ -10,7 +11,7 @@ namespace
 
 const double SPHERE_SIZE = 0.015;
 const double WIRE_OFFSET = 0.0005;
-const unsigned MAX_UINT = std::numeric_limits<unsigned>::max();
+const uint32_t MAX_UINT = std::numeric_limits<uint32_t>::max();
 
 Vector3d rainbow[] = {
     Vector3d(1.00, 0.00, 0.00), // Red
@@ -27,6 +28,7 @@ Vector3d rainbow[] = {
 GlWidget::GlWidget(QWidget* parent) :
     QGLWidget(parent),
     mRotX(0.f), mRotY(0.f),
+    mSelected(MAX_UINT),
     mBody(NULL)
 {
     mLightPos[0] = 0.0f;
@@ -142,8 +144,8 @@ GlWidget::mousePressEvent(QMouseEvent* event)
 
     if ((event->buttons() & Qt::LeftButton) && !(event->modifiers() & Qt::ControlModifier)) {
         // Select a particle
-        //unsigned selected = select(mLastMouse);
-        //select(selected);
+        uint32_t selected = select(mLastMouse);
+        select(selected);
     }
 }
 
@@ -260,14 +262,16 @@ GlWidget::renderBody() const
     if (mBody == NULL) return;
 
     // Draw points
-    glBegin(GL_POINTS);
     uint32_t index = 0;
-    for (auto& p : mBody->posWorld) {
+    for (auto p : mBody->posWorld) {
         const Eigen::Vector3d& color = rainbow[index++ % 7];
         glColor3d(color[0], color[1], color[2]);
-        glVertex3d(p[0], p[1], p[2]);
+
+        glPushMatrix();
+        glTranslated(p[0], p[1], p[2]);
+        glCallList(mSphereSolid);
+        glPopMatrix();
     }
-    glEnd();
 
     glColor3d(0.8, 0.8, 0.8);
     glBegin(GL_LINES);
@@ -285,4 +289,49 @@ GlWidget::renderBody() const
     //    }
     //}
     glEnd();
+}
+
+uint32_t
+GlWidget::select(const QPoint& clickPt) const
+{
+    // http://nehe.gamedev.net/data/articles/article.asp?article=13
+
+    GLdouble modelview[16];
+    GLdouble projection[16];
+    GLint viewport[4];
+    GLfloat winX, winY, winZ;
+    Vector3d pos;
+
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    winX = (GLfloat)clickPt.x();
+    winY = (GLfloat)viewport[3] - (GLfloat)clickPt.y();
+    glReadPixels(clickPt.x(), (GLint)winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
+
+    gluUnProject(winX, winY, winZ, modelview, projection, viewport, &pos[0], &pos[1], &pos[2]);
+
+    uint32_t index = 0;
+    for (auto x : mBody->posWorld) {
+        if ((x - pos).norm() < SPHERE_SIZE + WIRE_OFFSET) {
+            return index;
+        }
+        index++;
+    }
+
+    return MAX_UINT;
+}
+
+bool
+GlWidget::select(uint32_t index)
+{
+    if (mBody == NULL) return false;
+
+    if (index != mSelected) {
+        mSelected = index;
+        this->repaint();
+        emit selectionChanged(this);
+    }
+    return index < mBody->size();
 }

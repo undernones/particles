@@ -14,6 +14,7 @@ public:
     ~GlWidget();
 
     void setBody(const SoftBody* body) { mBody = body; }
+    bool select(uint32_t index);
 
 protected:
     virtual void initializeGL();
@@ -39,6 +40,7 @@ private:
 
     GLuint mSphereSolid;
     GLuint mSphereWire;
+    uint32_t mSelected;
 
     const SoftBody* mBody;
 
@@ -46,6 +48,10 @@ private:
     void zoom(int delta);
 
     void renderBody() const;
+    uint32_t select(const QPoint& clickPt) const;
+
+signals:
+    void selectionChanged(const GlWidget* sender) const;
 };
 
 #endif // QT_GLWIDGET_H
