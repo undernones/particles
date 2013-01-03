@@ -51,42 +51,42 @@ identity(SoftBody::MatrixList& matrices)
 SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
     mMaterial(material)
 {
-    if (!load(positionsFile, mPosRest)) {
+    if (!load(positionsFile, posRest)) {
         return; // TODO: Throw exception?
     }
 
-    uint32_t size = mPosRest.size();
+    uint32_t size = posRest.size();
 
-    mPosWorld.resize(size);
-    auto u = mPosRest.begin();
-    for (auto& x : mPosWorld) {
+    posWorld.resize(size);
+    auto u = posRest.begin();
+    for (auto& x : posWorld) {
         x = *u;
-        //x[0] *= 2;
+        x[0] *= 1.05;
         ++u;
     }
-    
-    mBases.resize(size);
-    identity(mBases);
 
-    mVelocities.resize(size);
-    zero(mVelocities);
+    bases.resize(size);
+    identity(bases);
 
-    mForces.resize(size);
+    velocities.resize(size);
+    zero(velocities);
 
-    mMasses.resize(size);
-    mVolumes.resize(size);
-    mRadii.resize(size);
+    forces.resize(size);
 
-    mNeighborhoods.resize(size);
+    masses.resize(size);
+    volumes.resize(size);
+    radii.resize(size);
 
-    mDefs.resize(size);
-    identity(mDefs);
+    neighborhoods.resize(size);
 
-    mStrains.resize(size);
-    zero(mStrains);
+    defs.resize(size);
+    identity(defs);
 
-    mStresses.resize(size);
-    zero(mStresses);
+    strains.resize(size);
+    zero(strains);
+
+    stresses.resize(size);
+    zero(stresses);
 
     updateNeighborhoods();
     updateRadii();
@@ -100,7 +100,7 @@ SoftBody::~SoftBody()
 void
 SoftBody::clearForces()
 {
-    zero(mForces);
+    zero(forces);
 }
 
 void
@@ -115,15 +115,15 @@ SoftBody::computeInternalForces()
 void
 SoftBody::updateNeighborhoods()
 {
-    auto kdTree = KdTree(mPosRest);
+    auto kdTree = KdTree(posRest);
 
     std::vector<uint32_t> indices;
     indices.reserve(Neighborhood::MAX_SIZE + 1);
 
-    auto neighbor_it = mNeighborhoods.begin();
-    auto radius_it = mRadii.begin();
+    auto neighbor_it = neighborhoods.begin();
+    auto radius_it = radii.begin();
     uint32_t index = 0;
-    for (auto& u : mPosRest) {
+    for (auto& u : posRest) {
         //
         // A particle's neighborhood should not include itself. However, this
         // kdTree will return an index for the current particle. So increment
@@ -131,7 +131,7 @@ SoftBody::updateNeighborhoods()
         // we're done.
         //
 
-        kdTree.neighbors(mPosRest, u, Neighborhood::MAX_SIZE + 1, *radius_it, indices);
+        kdTree.neighbors(posRest, u, Neighborhood::MAX_SIZE + 1, *radius_it, indices);
         auto selfLocation = std::find(indices.begin(), indices.end(), index);
         if (selfLocation != indices.end()) {
             indices.erase(selfLocation);
@@ -147,7 +147,7 @@ SoftBody::updateNeighborhoods()
             if (neighbor_it->hasNeighbor(j)) {
                 newNeighbors.push_back(neighbor_it->findNeighbor(j));
             } else {
-                Vector3d u_ij = mPosRest[j] - u;
+                Vector3d u_ij = posRest[j] - u;
                 Neighbor n(j, u_ij, 0.0);
                 newNeighbors.push_back(n);
             }
@@ -163,13 +163,13 @@ SoftBody::updateNeighborhoods()
 void
 SoftBody::updateRadii()
 {
-    auto u_it = mPosRest.begin();
-    auto n_it = mNeighborhoods.begin();
-    auto r_it = mRadii.begin();
-    for (; r_it != mRadii.end(); ++u_it, ++n_it, ++r_it) {
+    auto u_it = posRest.begin();
+    auto n_it = neighborhoods.begin();
+    auto r_it = radii.begin();
+    for (; r_it != radii.end(); ++u_it, ++n_it, ++r_it) {
         double avg = 0;
         for (auto& n : *n_it) {
-            avg += (*u_it - mPosRest[n.index]).norm();
+            avg += (*u_it - posRest[n.index]).norm();
         }
         avg /= n_it->size();
         *r_it = avg * 2.0;
@@ -179,21 +179,21 @@ SoftBody::updateRadii()
 void
 SoftBody::updateRestQuantities()
 {
-    auto x_it = mPosWorld.begin();
-    auto u_it = mPosRest.begin();
-    auto n_it = mNeighborhoods.begin();
-    auto r_it = mRadii.begin();
-    auto v_it = mVolumes.begin();
-    auto m_it = mMasses.begin();
+    auto x_it = posWorld.begin();
+    auto u_it = posRest.begin();
+    auto n_it = neighborhoods.begin();
+    auto r_it = radii.begin();
+    auto v_it = volumes.begin();
+    auto m_it = masses.begin();
 
-    for (auto& basis : mBases) {
+    for (auto& basis : bases) {
 
         double wSum = 0;
         basis.setZero();
         for (auto& n : *n_it) {
-            double distance = (*u_it - mPosRest[n.index]).norm();
+            double distance = (*u_it - posRest[n.index]).norm();
             n.w = Kernels::standardkernel(*r_it, distance);
-            n.u = mPosRest[n.index] - *u_it;
+            n.u = posRest[n.index] - *u_it;
             basis += n.u * n.u.transpose() * n.w;
             wSum += n.w;
         }
@@ -214,14 +214,14 @@ void
 SoftBody::computeFs()
 {
     Matrix3d rhs;
-    auto n_it = mNeighborhoods.begin();
-    auto f_it = mDefs.begin();
-    auto u_it = mPosWorld.begin();
-    auto b_it = mBases.begin();
-    for (; u_it != mPosWorld.end(); ++u_it, ++f_it, ++n_it, ++b_it) {
+    auto n_it = neighborhoods.begin();
+    auto f_it = defs.begin();
+    auto u_it = posWorld.begin();
+    auto b_it = bases.begin();
+    for (; u_it != posWorld.end(); ++u_it, ++f_it, ++n_it, ++b_it) {
         rhs.setZero();
         for (auto& n : *n_it) {
-            rhs += n.w * (mPosWorld[n.index] - *u_it) * n.u.transpose();
+            rhs += n.w * (posWorld[n.index] - *u_it) * n.u.transpose();
         }
         *f_it = rhs * *b_it;
     }
@@ -230,8 +230,8 @@ SoftBody::computeFs()
 void
 SoftBody::computeStrains()
 {
-    auto f_it = mDefs.begin();
-    for (auto& e : mStrains) {
+    auto f_it = defs.begin();
+    for (auto& e : strains) {
         const Matrix3d& F = *f_it;
         // Linear Cauchy strain
         //e = 0.5 * (F + F.transpose()) - Matrix3d::Identity();
@@ -243,9 +243,9 @@ SoftBody::computeStrains()
 void
 SoftBody::computeStresses()
 {
-    auto f_it = mDefs.begin();
-    auto e_it = mStrains.begin();
-    for (auto& stress : mStresses) {
+    auto f_it = defs.begin();
+    auto e_it = strains.begin();
+    for (auto& stress : stresses) {
         const Matrix3d& e = *e_it;
         const Matrix3d& F = *f_it;
 
@@ -264,21 +264,21 @@ SoftBody::computeStresses()
 void
 SoftBody::computeForces()
 {
-    auto v_it = mVolumes.begin();
-    auto stress_it = mStresses.begin();
-    auto basis_it = mBases.begin();
-    auto n_it = mNeighborhoods.begin();
+    auto v_it = volumes.begin();
+    auto stress_it = stresses.begin();
+    auto basis_it = bases.begin();
+    auto n_it = neighborhoods.begin();
 
-    for (auto& f : mForces) {
+    for (auto& f : forces) {
         double volume = *v_it;
         const Matrix3d& stress = *stress_it;
         const Matrix3d& basis = *basis_it;
         const Neighborhood& neighborhood = *n_it;
 
-        Matrix3d Fe = -volume * stress * basis;
+        Matrix3d Fe = -2 * volume * stress * basis;
         for (auto& n : neighborhood) {
             Vector3d force = Fe * (n.u * n.w);
-            mForces[n.index] += force;
+            forces[n.index] += force;
             f -= force;
         }
 

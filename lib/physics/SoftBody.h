@@ -12,29 +12,21 @@ public:
     typedef std::vector<Eigen::Vector3d> VectorList;
     typedef std::vector<Eigen::Matrix3d> MatrixList;
 
+    MatrixList bases;
+    VectorList posWorld;
+    VectorList posRest;
+    VectorList velocities;
+    VectorList forces;
+    std::vector<double> masses;
+    std::vector<double> volumes;
+    std::vector<double> radii;
+    std::vector<Neighborhood> neighborhoods;
+    MatrixList defs;
+    MatrixList strains;
+    MatrixList stresses;
+
     SoftBody(const std::string& positionsFile, const Material& material);
     ~SoftBody();
-
-    const VectorList& worldPositions() const { return mPosWorld; }
-    VectorList& worldPositions() { return mPosWorld; }
-
-    const VectorList& velocities() const { return mVelocities; }
-    VectorList& velocities() { return mVelocities; }
-
-    const VectorList& forces() const { return mForces; }
-    VectorList& forces() { return mForces; }
-
-    const std::vector<double> masses() const { return mMasses; }
-    std::vector<double> masses() { return mMasses; }
-
-    const MatrixList& defs() const { return mDefs; }
-    MatrixList& defs() { return mDefs; }
-
-    const MatrixList& strains() const { return mStrains; }
-    MatrixList& strains() { return mStrains; }
-
-    const MatrixList& stresses() const { return mStresses; }
-    MatrixList& stresses() { return mStresses; }
 
     inline const Material& material() const { return mMaterial; }
 
@@ -45,19 +37,6 @@ public:
     void updateRestQuantities();
 
 private:
-    MatrixList mBases;
-    VectorList mPosWorld;
-    VectorList mPosRest;
-    VectorList mVelocities;
-    VectorList mForces;
-    std::vector<double> mMasses;
-    std::vector<double> mVolumes;
-    std::vector<double> mRadii;
-    std::vector<Neighborhood> mNeighborhoods;
-    MatrixList mDefs;
-    MatrixList mStrains;
-    MatrixList mStresses;
-
     Material mMaterial;
 
     SoftBody(const SoftBody&);

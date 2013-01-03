@@ -27,7 +27,7 @@ Vector3d rainbow[] = {
 GlWidget::GlWidget(QWidget* parent) :
     QGLWidget(parent),
     mRotX(0.f), mRotY(0.f),
-    mPoints(NULL)
+    mBody(NULL)
 {
     mLightPos[0] = 0.0f;
     mLightPos[1] = 2.0f;
@@ -130,7 +130,7 @@ GlWidget::paintGL()
     glRotatef(mRotX, 1.0f, 0, 0);
     glRotated(mRotY, 0, 1.0f, 0);
 
-    renderPoints();
+    renderBody();
 
     glFlush();
 }
@@ -255,14 +255,14 @@ GlWidget::zoom(int delta)
 }
  
 void
-GlWidget::renderPoints() const
+GlWidget::renderBody() const
 {
-    if (mPoints == NULL) return;
+    if (mBody == NULL) return;
 
     // Draw points
     glBegin(GL_POINTS);
     uint32_t index = 0;
-    for (auto& p : *mPoints) {
+    for (auto& p : mBody->posWorld) {
         const Eigen::Vector3d& color = rainbow[index++ % 7];
         glColor3d(color[0], color[1], color[2]);
         glVertex3d(p[0], p[1], p[2]);

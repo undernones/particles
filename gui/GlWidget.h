@@ -3,8 +3,8 @@
 
 #include <QtOpenGL/QGLWidget>
 #include <Eigen>
-#include <vector>
 
+class SoftBody;
 class GlWidget : public QGLWidget
 {
     Q_OBJECT
@@ -13,7 +13,7 @@ public:
     explicit GlWidget(QWidget* parent = NULL);
     ~GlWidget();
 
-    void setPoints(const std::vector<Eigen::Vector3d>* points) { mPoints = points; }
+    void setBody(const SoftBody* body) { mBody = body; }
 
 protected:
     virtual void initializeGL();
@@ -40,12 +40,12 @@ private:
     GLuint mSphereSolid;
     GLuint mSphereWire;
 
-    const std::vector<Eigen::Vector3d>* mPoints;
+    const SoftBody* mBody;
 
     void initSphereList();
     void zoom(int delta);
 
-    void renderPoints() const;
+    void renderBody() const;
 };
 
 #endif // QT_GLWIDGET_H

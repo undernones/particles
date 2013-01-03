@@ -18,11 +18,11 @@ World::step(double dt)
         body->computeInternalForces();
 
         // Integrate
-        auto x_it = body->worldPositions().begin();
-        auto v_it = body->velocities().begin();
-        auto f_it = body->forces().begin();
-        auto m_it = body->masses().begin();
-        for (; f_it != body->forces().end(); ++x_it, ++v_it, ++f_it, ++m_it) {
+        auto x_it = body->posWorld.begin();
+        auto v_it = body->velocities.begin();
+        auto f_it = body->forces.begin();
+        auto m_it = body->masses.begin();
+        for (; f_it != body->forces.end(); ++x_it, ++v_it, ++f_it, ++m_it) {
             static Eigen::Vector3d g(0, Options::gravity(), 0);
             auto a = *f_it / *m_it + g;
             *v_it += dt * a;

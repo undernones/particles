@@ -29,15 +29,13 @@ MainWindow::~MainWindow()
 void
 MainWindow::setSoftBody(const SoftBody* body)
 {
-    const SoftBody::VectorList* points = NULL;
     const Eigen::Matrix3d* matrix = NULL;
 
     if (body != NULL) {
-        points = &body->worldPositions();
-        matrix = &body->strains()[0];
+        matrix = &body->strains[0];
     }
 
-    ui->glWidget->setPoints(points);
+    ui->glWidget->setBody(body);
     ui->matrixViewer->setMatrix(matrix);
 }
 
