@@ -9,3 +9,5 @@ headless
 hours.txt
 
 *.a
+
+gui/gui

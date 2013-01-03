@@ -15,6 +15,18 @@ public:
     SoftBody(const std::string& positionsFile, const Material& material);
     ~SoftBody();
 
+    const VectorList& worldPositions() const { return mPosWorld; }
+    VectorList& worldPositions() { return mPosWorld; }
+
+    const VectorList& velocities() const { return mVelocities; }
+    VectorList& velocities() { return mVelocities; }
+
+    const VectorList& forces() const { return mForces; }
+    VectorList& forces() { return mForces; }
+
+    const std::vector<double> masses() const { return mMasses; }
+    std::vector<double> masses() { return mMasses; }
+
     const MatrixList& defs() const { return mDefs; }
     MatrixList& defs() { return mDefs; }
 
@@ -29,6 +41,7 @@ public:
     void clearForces();
     void computeInternalForces();
     void updateNeighborhoods();
+    void updateRadii();
     void updateRestQuantities();
 
 private:

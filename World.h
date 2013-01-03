@@ -10,6 +10,8 @@ public:
     static void step(double dt);
     static void addSoftBody(SoftBody* body);
 
+    static const std::vector<const SoftBody*> bodies();
+
 private:
     static std::vector<SoftBody*> sBodies;
 };

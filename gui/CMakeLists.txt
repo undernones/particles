@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
-project(particles)
+project(gui)
+
+# Questions? Look here:
+# http://developer.qt.nokia.com/quarterly/view/using_cmake_to_build_qt_projects
 
 #
 # If the user specifies -DCMAKE_BUILD_TYPE on the command line, take their
@@ -12,20 +15,34 @@ else()
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the build type.  Options are: Debug, Release")
 endif()
 
+
+find_package(Qt4 REQUIRED)
+if (QT_FOUND)
+    include(${QT_USE_FILE})
+else()
+    message("FATAL ERROR: Qt4 not found.")
+endif()
+
 include_directories(
     .
-    lib
-    /opt/local/include/eigen3/Eigen
-    /opt/local/include
+    ../lib
     /usr/local/include
+    /opt/local/include
+    /System/Library/Frameworks
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 link_directories(
-    /opt/local/lib
+    ..
     /usr/local/lib
+    /opt/local/lib
 )
 
+find_library(GL_LIBRARY OpenGL)
+find_library(GLUT_LIBRARY GLUT)
+set(EXTRA_LIBS ${GL_LIBRARY} ${GLUT_LIBRARY})
+
 if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+    set(CMAKE_BUILD_TYPE Debug)
 endif()
 
 set(CMAKE_CXX_FLAGS "-Qunused-arguments -std=c++11 -stdlib=libc++ -Wall -Wno-long-long -pedantic")
@@ -34,33 +51,36 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
 
 if (CMAKE_BUILD_TYPE MATCHES "Release")
     add_definitions(-DNDEBUG)
-endif ()
+endif()
 
-set (GEOM_SRC
-    lib/geom/KdTree.cpp
-    lib/geom/Neighbor.cpp
-    lib/geom/Neighborhood.cpp
+set(SOURCES
+    main.cpp
+    GlWidget.cpp
+    MainWindow.cpp
+    MatrixViewer.cpp
+    SimThread.cpp
+    ../Options.cpp
+    ../World.cpp
 )
-add_library(geom ${GEOM_SRC})
-target_link_libraries(geom ${LIBS})
+# TODO: ^ Dependencies!
 
-set (PHYSICS_SRC
-    lib/physics/Obstacle.cpp
-    lib/physics/PlaneObstacle.cpp
-    lib/physics/SoftBody.cpp
+set(FORMS MainWindow.ui MatrixViewer.ui)
+set(RESOURCES images.qrc)
+set(LIBS geom physics)
+
+set(CMAKE_AUTOMOC ON)
+set(QT_USE_QTOPENGL TRUE)
+qt4_wrap_ui(FORMS_HEADERS ${FORMS})
+qt4_add_resources(RESOURCES_RCC ${RESOURCES})
+
+include(${QT_USE_FILE})
+add_definitions(${QT_DEFINITIONS} -DPCUBE -DQTVIEWER)
+
+add_executable(gui ${SOURCES} 
+    ${FORMS_HEADERS}
+    ${RESOURCES_RCC}
 )
-add_library(physics ${PHYSICS_SRC})
-target_link_libraries(physics geom ${LIBS})
-
-set (CORE_SRC
-    Options.cpp
-    Utils.cpp
-    World.cpp
-)
-add_executable(headless main.cpp ${CORE_SRC})
-target_link_libraries(headless physics geom ${LIBS})
-
-add_subdirectory(gui)
+target_link_libraries(gui ${LIBS} ${EXTRA_LIBS} ${QT_LIBRARIES})
 
 message(STATUS)
 message(STATUS "--------------------------------------------------------------------------------")
