@@ -61,7 +61,6 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
     auto u = posRest.begin();
     for (auto& x : posWorld) {
         x = *u;
-        x[0] *= 1.05;
         ++u;
     }
 
@@ -237,6 +236,7 @@ SoftBody::computeStrains()
         //e = 0.5 * (F + F.transpose()) - Matrix3d::Identity();
         // Quadratic Green strain
         e = 0.5 * (F.transpose() * F - Matrix3d::Identity());
+        ++f_it;
     }
 }
 

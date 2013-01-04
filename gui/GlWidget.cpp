@@ -261,34 +261,85 @@ GlWidget::renderBody() const
 {
     if (mBody == NULL) return;
 
+    bool hasSelected = mSelected < mBody->size();
+
     // Draw points
     uint32_t index = 0;
     for (auto p : mBody->posWorld) {
-        const Eigen::Vector3d& color = rainbow[index++ % 7];
+        Eigen::Vector3d color = rainbow[index % 7];
+        if (hasSelected) {
+            color *= 0.2;
+        }
         glColor3d(color[0], color[1], color[2]);
 
         glPushMatrix();
+
         glTranslated(p[0], p[1], p[2]);
         glCallList(mSphereSolid);
+
+        if (index == mSelected) {
+            glDisable(GL_LIGHTING);
+            glColor4d(1, 1, 1, 1);
+            glCallList(mSphereWire);
+            glEnable(GL_LIGHTING);
+        }
+
+        if (false) { // TODO: view forces
+            const Vector3d& force = mBody->forces[index];
+            glDisable(GL_LIGHTING);
+            if (index == mSelected)
+                glLineWidth(3);
+            glBegin(GL_LINES);
+            glVertex3d(0, 0, 0);
+            glVertex3d(force[0], force[1], force[2]);
+            glEnd();
+            glEnable(GL_LIGHTING);
+            glLineWidth(1);
+            glEnable(GL_LIGHTING);
+        }
+
         glPopMatrix();
+        index++;
     }
 
-    glColor3d(0.8, 0.8, 0.8);
-    glBegin(GL_LINES);
-    //for (const Vertex& v : mMesh->verts) {
-    //    Vector3d end = v.x + v.f;
-    //    glVertex3d(v.x[0], v.x[1], v.x[2]);
-    //    glVertex3d(end[0], end[1], end[2]);
-    //}
-    //glColor3d(0, 0.8, 0);
-    //for (const Tetrahedron& t : mMesh->tets) {
-    //    const Vector3d* norms = t.normals();
-    //    for (int i = 0; i < 4; ++i) {
-    //        glVertex3d(0, 0, 0);
-    //        glVertex3d(norms[i][0], norms[i][1], norms[i][2]);
-    //    }
-    //}
-    glEnd();
+    if (hasSelected && true) { // TODO: view neighborhoods
+        const Vector3d& basePos = mBody->posWorld[mSelected];
+
+        glDisable(GL_LIGHTING);
+        for (auto& n : mBody->neighborhoods[mSelected]) {
+            const Vector3d& x = mBody->posWorld[n.index];
+
+            glPushMatrix();
+            glTranslated(x[0], x[1], x[2]);
+            glColor3d(1, 1, 0.6);
+            glCallList(mSphereWire);
+            glPopMatrix();
+        }
+        glEnable(GL_LIGHTING);
+
+        /*
+        BOOST_FOREACH (const Neighbor &neighbor, particles[mSelectedIndex].neighbors) {
+            const Particle &n = particles[neighbor.index];
+            const SlVector3 &pos = (mSpace == World) ? n.worldPos : n.materialPos;
+
+            glPushMatrix();
+            glTranslated(pos[0], pos[1], pos[2]);
+            glColor3d(1, 1, 0.6);
+            glCallList(mSphereWire);
+            glPopMatrix();
+
+            if (mVectors != ParticleViewer::NoVectors) {
+                glLineWidth(2);
+                SlVector3 neighborLoc = basePos + neighbor.u;
+                glColor3d(1, 0, 0);
+                glBegin(GL_LINES);
+                glVertex3d(basePos[0], basePos[1], basePos[2]);
+                glVertex3d(neighborLoc[0], neighborLoc[1], neighborLoc[2]);
+                glEnd();
+            }
+        }
+        */
+    }
 }
 
 uint32_t

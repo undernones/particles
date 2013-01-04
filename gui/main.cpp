@@ -1,4 +1,5 @@
 #include <QtGui/QApplication>
+#include <physics/PlaneObstacle.h>
 #include <physics/SoftBody.h>
 #include "MainWindow.h"
 #include "SimThread.h"
@@ -16,6 +17,7 @@ int main(int argc, char* argv[])
     };
     SoftBody body(Options::particleFile(), material);
     World::addSoftBody(&body);
+    World::addObstacle(new PlaneObstacle(Eigen::Vector3d(0, 1, 0), -1, Options::friction()));
 
     SimThread& thread(SimThread::instance());
     // TODO: Fix the backwards logic. Something is wrong with the

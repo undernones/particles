@@ -1,13 +1,21 @@
 #include "World.h"
+#include <physics/Obstacle.h>
 #include <physics/SoftBody.h>
 #include "Options.h"
 
 std::vector<SoftBody*> World::sBodies;
+std::vector<Obstacle*> World::sObstacles;
 
 void
 World::addSoftBody(SoftBody* body)
 {
     sBodies.push_back(body);
+}
+
+void
+World::addObstacle(Obstacle* obstacle)
+{
+    sObstacles.push_back(obstacle);
 }
 
 void
@@ -30,13 +38,15 @@ World::step(double dt)
         }
 
         // Collide
-        //for (auto o : sObstacles) {
-        //    for (auto& vert : sBody.mesh().verts) {
-        //        if (o->bounce(vert)) {
-        //            //std::cout << "hit!" << std::endl;
-        //        }
-        //    }
-        //}
+        for (auto o : sObstacles) {
+            for (auto b : sBodies) {
+                auto x_it = b->posWorld.begin();
+                auto v_it = b->velocities.begin();
+                for (uint32_t i = 0; i < b->size(); ++i, ++x_it, ++v_it) {
+                    o->bounce(*x_it, *v_it);
+                }
+            }
+        }
     }
 }
 
