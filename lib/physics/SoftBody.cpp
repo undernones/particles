@@ -70,6 +70,9 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
     velocities.resize(size);
     zero(velocities);
 
+    accels.resize(size);
+    zero(accels);
+
     forces.resize(size);
 
     masses.resize(size);

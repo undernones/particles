@@ -33,7 +33,7 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Tetrahedron Info:</string>
+           <string>Particle Info:</string>
           </property>
          </widget>
         </item>

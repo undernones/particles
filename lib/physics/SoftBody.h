@@ -16,6 +16,7 @@ public:
     VectorList posWorld;
     VectorList posRest;
     VectorList velocities;
+    VectorList accels;
     VectorList forces;
     std::vector<double> masses;
     std::vector<double> volumes;
