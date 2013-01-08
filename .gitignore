@@ -16,3 +16,4 @@ hours.txt
 moc_*
 qrc_*
 ui_*
+*.qrc.depends

@@ -4,6 +4,7 @@
 #include "Options.h"
 #include "Utils.h"
 #include "World.h"
+#include <geom/Mesh.h>
 
 namespace
 {
@@ -15,6 +16,8 @@ int
 main(int argc, char* argv[])
 {
     try {
+        Mesh m = Mesh::loadObj("meshes/tub.obj");
+
         Options::init(argc, argv);
 
         Material material = {
