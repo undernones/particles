@@ -37,7 +37,9 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
 endif ()
 
 set (GEOM_SRC
+    lib/geom/BBox.cpp
     lib/geom/KdTree.cpp
+    lib/geom/Mesh.cpp
     lib/geom/Neighbor.cpp
     lib/geom/Neighborhood.cpp
 )

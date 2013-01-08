@@ -1,6 +1,6 @@
 #include "Neighborhood.h"
 
-const uint32_t Neighborhood::MAX_SIZE = 16;
+const uint32_t Neighborhood::MAX_SIZE = 8;
 
 Neighborhood::Neighborhood() : Collection<Neighbor>()
 {

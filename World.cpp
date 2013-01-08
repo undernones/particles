@@ -27,6 +27,8 @@ integrateExplicit(double dt, SoftBody& body)
 void
 integrateLeapfrog(double dt, SoftBody& body)
 {
+    // TODO: Debug this. It doesn't seem to work.
+
     double dt_2 = 0.5 * dt;
 
     auto x_it = body.posWorld.begin();
