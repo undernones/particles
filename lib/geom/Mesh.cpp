@@ -55,9 +55,9 @@ Mesh::loadObj(const std::string& filename, Mesh& mesh)
     }
 
     {
-        mesh.verts.reserve(vertCount);
-        mesh.faces.reserve(faceCount);
-        mesh.normals.reserve(vertCount);
+        mesh.mVerts.reserve(vertCount);
+        mesh.mFaces.reserve(faceCount);
+        mesh.mNormals.reserve(vertCount);
 
         std::ifstream inf(filename.c_str(), std::ios::in);
         if (!inf.is_open()) return false;
@@ -70,7 +70,8 @@ Mesh::loadObj(const std::string& filename, Mesh& mesh)
                 if (line[1] == ' ' || line[1] == '\t') {
                     std::stringstream stream(line.substr(2));
                     stream >> x >> y >> z;
-                    mesh.verts.push_back(Vector3d(x, y, z));
+                    mesh.mVerts.push_back(Vector3d(x, y, z));
+                    mesh.mBBox.add(mesh.mVerts.back());
                 }
                 break;
 
@@ -82,11 +83,11 @@ Mesh::loadObj(const std::string& filename, Mesh& mesh)
                     std::stringstream stream(line.substr(1));
                     stream >> p >> q >> r;
                     p--; q--; r--;
-                    mesh.faces.push_back(Triangle(p, q, r));
+                    mesh.mFaces.push_back(Triangle(p, q, r));
 
-                    Vector3d v1 = mesh.verts[q] - mesh.verts[p];
-                    Vector3d v2 = mesh.verts[r] - mesh.verts[p];
-                    mesh.normals.push_back(v1.cross(v2).normalized());
+                    Vector3d v1 = mesh.mVerts[q] - mesh.mVerts[p];
+                    Vector3d v2 = mesh.mVerts[r] - mesh.mVerts[p];
+                    mesh.mNormals.push_back(v1.cross(v2).normalized());
                 }
                 break;
 

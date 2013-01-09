@@ -29,12 +29,12 @@ renderMesh(const Mesh& mesh)
 {
     glColor3d(1, 1, 1);
     glBegin(GL_TRIANGLES);
-    auto n_it = mesh.normals.begin();
-    for (auto f : mesh.faces) {
+    auto n_it = mesh.normals().begin();
+    for (auto f : mesh.faces()) {
         glNormal3dv(n_it->data());
-        glVertex3dv(mesh.verts[f[0]].data());
-        glVertex3dv(mesh.verts[f[1]].data());
-        glVertex3dv(mesh.verts[f[2]].data());
+        glVertex3dv(mesh.verts()[f[0]].data());
+        glVertex3dv(mesh.verts()[f[1]].data());
+        glVertex3dv(mesh.verts()[f[2]].data());
         ++n_it;
     }
     glEnd();
