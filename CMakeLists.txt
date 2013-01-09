@@ -42,6 +42,7 @@ set (GEOM_SRC
     lib/geom/Mesh.cpp
     lib/geom/Neighbor.cpp
     lib/geom/Neighborhood.cpp
+    lib/geom/Triangle.cpp
 )
 add_library(geom ${GEOM_SRC})
 target_link_libraries(geom ${LIBS})

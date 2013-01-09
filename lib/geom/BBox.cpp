@@ -17,7 +17,7 @@ BBox::contains(const Eigen::Vector3d& p) const
 }
 
 BBox
-BBox::unionWith(const BBox& other) const
+BBox::add(const BBox& other) const
 {
     BBox result(*this);
 
@@ -28,6 +28,22 @@ BBox::unionWith(const BBox& other) const
     if (other.hi[0] > hi[0]) result.hi[0] = other.hi[0];
     if (other.hi[1] > hi[1]) result.hi[1] = other.hi[1];
     if (other.hi[2] > hi[2]) result.hi[2] = other.hi[2];
+
+    return result;
+}
+
+BBox
+BBox::add(const Eigen::Vector3d& p) const
+{
+    BBox result(*this);
+
+    if (p[0] < lo[0]) result.lo[0] = p[0];
+    if (p[1] < lo[1]) result.lo[1] = p[1];
+    if (p[2] < lo[2]) result.lo[2] = p[2];
+
+    if (p[0] > hi[0]) result.hi[0] = p[0];
+    if (p[1] > hi[1]) result.hi[1] = p[1];
+    if (p[2] > hi[2]) result.hi[2] = p[2];
 
     return result;
 }

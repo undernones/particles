@@ -12,7 +12,8 @@ public:
     BBox();
 
     bool contains(const Eigen::Vector3d& p) const;
-    BBox unionWith(const BBox& other) const;
+    BBox add(const BBox& other) const;
+    BBox add(const Eigen::Vector3d& p) const;
 };
 
 #endif // GEOM_BBOX_H
