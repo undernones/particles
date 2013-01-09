@@ -49,7 +49,8 @@ identity(SoftBody::MatrixList& matrices)
 }
 
 SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
-    mMaterial(material)
+    mMaterial(material),
+    mMesh(nullptr)
 {
     if (!load(positionsFile, posRest)) {
         return; // TODO: Throw exception?

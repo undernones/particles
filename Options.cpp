@@ -11,6 +11,7 @@ int start_paused = 0;
 std::string OPT_framesDir("frames");
 std::string OPT_restoreFile(INVALID_FILE);
 std::string OPT_particleFile("samples/pig.txt");
+std::string OPT_meshFile;
 double OPT_dt = 1.0 / 120;
 uint32_t OPT_fps = 30;
 double OPT_duration = 10;
@@ -28,6 +29,7 @@ struct option long_options[] = {
     { "frames_dir",       required_argument, NULL,            'o' }, // output
     { "restore_file",     required_argument, NULL,            'r' }, // restore
     { "particle_file",    required_argument, NULL,            'p' }, // particles
+    { "mesh_file",        required_argument, NULL,            'e' }, // surface mEsh
     { "dt",               required_argument, NULL,            't' }, // time
     { "fps",              required_argument, NULL,            'f' }, // fps
     { "duration",         required_argument, NULL,            'u' }, // dUration
@@ -50,6 +52,7 @@ struct option long_options[] = {
 std::string Options::framesDir() { return OPT_framesDir; }
 std::string Options::restoreFile() { return OPT_restoreFile; }
 std::string Options::particleFile() { return OPT_particleFile; }
+std::string Options::meshFile() { return OPT_meshFile; }
 double Options::dt() { return OPT_dt; }
 uint32_t Options::fps() { return OPT_fps; }
 double Options::duration() { return OPT_duration; }
@@ -83,6 +86,10 @@ Options::init(int argc, char* argv[])
 
         case 'p':
             OPT_particleFile = optarg;
+            break;
+
+        case 'e':
+            OPT_meshFile = optarg;
             break;
 
         case 't':

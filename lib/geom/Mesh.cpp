@@ -21,11 +21,9 @@ std::string nextLine(std::istream& in)
 
 }
 
-Mesh
-Mesh::loadObj(const std::string& filename)
+bool
+Mesh::loadObj(const std::string& filename, Mesh& mesh)
 {
-    Mesh result;
-
     uint32_t vertCount = 0;
     uint32_t faceCount = 0;
     bool hasNormals = false;
@@ -34,13 +32,15 @@ Mesh::loadObj(const std::string& filename)
     std::string line;
     {
         std::ifstream inf(filename.c_str(), std::ios::in);
+        if (!inf.is_open()) return false;
+
         while ((line = nextLine(inf)).length() > 0) {
             switch (line[0]) {
             case 'v':
                 if (line[1] == ' ' || line[1] == '\t') vertCount++;
                 else if (line[1] == 'n') hasNormals = true;
                 else if (line[1] == 't') hasTextures = true;
-                else { /* TODO: throw exception? */ }
+                else { return false; }
                 break;
 
             case 'f':
@@ -55,19 +55,22 @@ Mesh::loadObj(const std::string& filename)
     }
 
     {
-        result.verts.reserve(vertCount);
-        result.faces.reserve(faceCount);
+        mesh.verts.reserve(vertCount);
+        mesh.faces.reserve(faceCount);
+        mesh.normals.reserve(vertCount);
+
+        std::ifstream inf(filename.c_str(), std::ios::in);
+        if (!inf.is_open()) return false;
 
         double x, y, z;
         uint32_t p, q, r;
-        std::ifstream inf(filename.c_str(), std::ios::in);
         while ((line = nextLine(inf)).length() > 0) {
             switch (line[0]) {
             case 'v':
                 if (line[1] == ' ' || line[1] == '\t') {
                     std::stringstream stream(line.substr(2));
                     stream >> x >> y >> z;
-                    result.verts.push_back(Vector3d(x, y, z));
+                    mesh.verts.push_back(Vector3d(x, y, z));
                 }
                 break;
 
@@ -78,8 +81,13 @@ Mesh::loadObj(const std::string& filename)
                 } else {
                     std::stringstream stream(line.substr(1));
                     stream >> p >> q >> r;
+                    p--; q--; r--;
+                    mesh.faces.push_back(Triangle(p, q, r));
+
+                    Vector3d v1 = mesh.verts[q] - mesh.verts[p];
+                    Vector3d v2 = mesh.verts[r] - mesh.verts[p];
+                    mesh.normals.push_back(v1.cross(v2).normalized());
                 }
-                result.faces.push_back(Triangle(p-1, q-1, r-1));
                 break;
 
             default:
@@ -89,5 +97,5 @@ Mesh::loadObj(const std::string& filename)
         }
     }
 
-    return result;
+    return true;
 }

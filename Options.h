@@ -9,6 +9,7 @@ public:
     static std::string framesDir();
     static std::string restoreFile();
     static std::string particleFile();
+    static std::string meshFile();
     static double dt();
     static uint32_t fps();
     static double duration();

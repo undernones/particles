@@ -1,4 +1,5 @@
 #include <QtGui/QApplication>
+#include <geom/Mesh.h>
 #include <physics/PlaneObstacle.h>
 #include <physics/SoftBody.h>
 #include "MainWindow.h"
@@ -16,6 +17,11 @@ int main(int argc, char* argv[])
         Options::density(),
     };
     SoftBody body(Options::particleFile(), material);
+    Mesh mesh;
+    if (Mesh::loadObj(Options::meshFile(), mesh)) {
+        body.setMesh(&mesh);
+    }
+
     World::addSoftBody(&body);
     World::addObstacle(new PlaneObstacle(Eigen::Vector3d(0, 1, 0), -1, Options::friction()));
 

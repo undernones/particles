@@ -6,6 +6,7 @@
 #include <geom/Neighborhood.h>
 #include "Material.h"
 
+class Mesh;
 class SoftBody
 {
 public:
@@ -39,8 +40,13 @@ public:
 
     inline size_t size() const { return bases.size(); }
 
+    const Mesh* mesh() const { return mMesh; }
+    void setMesh(const Mesh* mesh) { mMesh = mesh; }
+    bool hasMesh() const { return mMesh != nullptr; }
+
 private:
     Material mMaterial;
+    const Mesh* mMesh;
 
     SoftBody(const SoftBody&);
     SoftBody& operator =(const SoftBody&);

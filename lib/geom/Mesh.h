@@ -9,10 +9,11 @@
 class Mesh
 {
 public:
+    std::vector<Eigen::Vector3d> normals;
     std::vector<Eigen::Vector3d> verts;
     std::vector<Triangle> faces;
 
-    static Mesh loadObj(const std::string& filename);
+    static bool loadObj(const std::string& filename, Mesh& mesh);
 };
 
 #endif // GEOM_MESH_H

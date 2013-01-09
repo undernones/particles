@@ -1,6 +1,7 @@
 #include "GlWidget.h"
 #include <GLUT/glut.h>
 #include <QtGui/QMouseEvent>
+#include <geom/Mesh.h>
 #include <physics/SoftBody.h>
 #include <iostream>
 
@@ -22,6 +23,22 @@ Vector3d rainbow[] = {
     Vector3d(0.29, 0.00, 0.51), // Indigo
     Vector3d(0.55, 0.00, 1.00), // Violet
 };
+
+void
+renderMesh(const Mesh& mesh)
+{
+    glColor3d(1, 1, 1);
+    glBegin(GL_TRIANGLES);
+    auto n_it = mesh.normals.begin();
+    for (auto f : mesh.faces) {
+        glNormal3dv(n_it->data());
+        glVertex3dv(mesh.verts[f[0]].data());
+        glVertex3dv(mesh.verts[f[1]].data());
+        glVertex3dv(mesh.verts[f[2]].data());
+        ++n_it;
+    }
+    glEnd();
+}
 
 }
 
@@ -339,6 +356,10 @@ GlWidget::renderBody() const
             }
         }
         */
+    }
+
+    if (true && mBody->hasMesh()) { // TODO: show mesh
+        renderMesh(*mBody->mesh());
     }
 }
 
