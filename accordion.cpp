@@ -1,4 +1,15 @@
 #include <iostream>
+#include <vector>
+#include <Eigen>
+#include <geom/Triangle.h>
+
+namespace
+{
+
+std::vector<Eigen::Vector3d> verts;
+std::vector<Triangle> faces;
+
+}
 
 int
 main(int argc, char* argv[])
@@ -8,6 +19,7 @@ main(int argc, char* argv[])
                   << argv[0]
                   << " lo_x lo_y lo_z hi_x hi_y hi_z thickness fold_count"
                   << std::endl;
+        return 1;
     }
 
     const double lox = atof(argv[1]);
@@ -28,7 +40,7 @@ main(int argc, char* argv[])
         << fold_count << std::endl;
 
     for (unsigned i = 0; i <= fold_count; ++i) {
-        double y = i * (hiz - loz) / fold_count;
+        double y = i * (hiy - loy) / fold_count + loy;
         double xlo = lox;
         double xhi = hix;
         double zlo = loz;
@@ -39,12 +51,35 @@ main(int argc, char* argv[])
             zlo += thickness;
             zhi -= thickness;
         }
-        std::cout
-            << "v " << xlo << " " << y << " " << zlo << std::endl
-            << "v " << xlo << " " << y << " " << zhi << std::endl
-            << "v " << xhi << " " << y << " " << zhi << std::endl
-            << "v " << xhi << " " << y << " " << zlo << std::endl
-        ;
+        verts.push_back(Eigen::Vector3d(xlo, y, zlo));
+        verts.push_back(Eigen::Vector3d(xlo, y, zhi));
+        verts.push_back(Eigen::Vector3d(xhi, y, zhi));
+        verts.push_back(Eigen::Vector3d(xhi, y, zlo));
+    }
+
+    faces.push_back(Triangle(1, 3, 2));
+    faces.push_back(Triangle(1, 4, 3));
+    unsigned base;
+    for (unsigned i = 0; i < fold_count; ++i) {
+        base = i * 4 + 1;
+        faces.push_back(Triangle(base + 0, base + 1, base + 4));
+        faces.push_back(Triangle(base + 4, base + 1, base + 5));
+        faces.push_back(Triangle(base + 1, base + 2, base + 5));
+        faces.push_back(Triangle(base + 5, base + 2, base + 6));
+        faces.push_back(Triangle(base + 2, base + 3, base + 6));
+        faces.push_back(Triangle(base + 6, base + 3, base + 7));
+        faces.push_back(Triangle(base + 3, base + 0, base + 7));
+        faces.push_back(Triangle(base + 7, base + 0, base + 4));
+    }
+    base += 4;
+    faces.push_back(Triangle(base + 0, base + 1, base + 2));
+    faces.push_back(Triangle(base + 0, base + 2, base + 3));
+
+    for (auto& v : verts) {
+        std::cout << "v " << v[0] << " " << v[1] << " " << v[2] << std::endl;
+    }
+    for (auto& f : faces) {
+        std::cout << "f " << f[0] << " " << f[1] << " " << f[2] << std::endl;
     }
 
     return 0;

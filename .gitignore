@@ -9,6 +9,7 @@ headless
 gui/gui
 *.a
 a.out
+accordion
 
 hours.txt
 

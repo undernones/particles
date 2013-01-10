@@ -65,6 +65,9 @@ target_link_libraries(headless physics geom ${LIBS})
 
 add_subdirectory(gui)
 
+add_executable(accordion accordion.cpp)
+target_link_libraries(accordion geom ${LIBS})
+
 message(STATUS)
 message(STATUS "--------------------------------------------------------------------------------")
 message(STATUS "Change a value with: cmake . -D<Variable>=<Value>")
