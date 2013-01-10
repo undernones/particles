@@ -58,7 +58,6 @@ public:
     inline const T& back() const  { return mItems.back(); }
 
     inline void push_back(const T &p) { mItems.push_back(p); }
-
     inline void clear() { mItems.clear(); }
 
     inline iterator insert(iterator position, const T& p)

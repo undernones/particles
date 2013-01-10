@@ -191,16 +191,14 @@ SoftBody::updateRestQuantities()
 
     for (auto& basis : bases) {
 
-        double wSum = 0;
         basis.setZero();
         for (auto& n : *n_it) {
             double distance = (*u_it - posRest[n.index]).norm();
             n.w = Kernels::standardkernel(*r_it, distance);
             n.u = posRest[n.index] - *u_it;
             basis += n.u * n.u.transpose() * n.w;
-            wSum += n.w;
         }
-        *v_it = sqrt(basis.determinant() / Utils::cube(wSum));
+        *v_it = sqrt(basis.determinant() / Utils::cube(n_it->wSum()));
         *m_it = mMaterial.density * *v_it;
         basis = basis.inverse().eval();
 

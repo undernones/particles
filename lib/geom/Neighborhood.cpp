@@ -24,3 +24,13 @@ Neighborhood::findNeighbor(uint32_t j)
     }
     return Neighbor();
 }
+
+double
+Neighborhood::wSum() const
+{
+    double sum = 0;
+    for (auto& n : *this) {
+        sum += n.w;
+    }
+    return sum;
+}
