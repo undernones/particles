@@ -24,26 +24,26 @@ integrateExplicit(double dt, SoftBody& body)
     }
 }
 
-void
-integrateLeapfrog(double dt, SoftBody& body)
-{
-    // TODO: Debug this. It doesn't seem to work.
-
-    double dt_2 = 0.5 * dt;
-
-    auto x_it = body.posWorld.begin();
-    auto v_it = body.velocities.begin();
-    auto f_it = body.forces.begin();
-    auto m_it = body.masses.begin();
-    auto a_it = body.accels.begin();
-    for (; f_it != body.forces.end(); ++x_it, ++v_it, ++f_it, ++m_it, ++a_it) {
-        static Eigen::Vector3d g(0, Options::gravity(), 0);
-        auto a = *f_it / *m_it + g;
-        *x_it += dt * (*v_it + dt_2 * *a_it);
-        *v_it += dt_2 * (a + *a_it);
-        *a_it = a;
-    }
-}
+//void
+//integrateLeapfrog(double dt, SoftBody& body)
+//{
+//    // TODO: Debug this. It doesn't seem to work.
+//
+//    double dt_2 = 0.5 * dt;
+//
+//    auto x_it = body.posWorld.begin();
+//    auto v_it = body.velocities.begin();
+//    auto f_it = body.forces.begin();
+//    auto m_it = body.masses.begin();
+//    auto a_it = body.accels.begin();
+//    for (; f_it != body.forces.end(); ++x_it, ++v_it, ++f_it, ++m_it, ++a_it) {
+//        static Eigen::Vector3d g(0, Options::gravity(), 0);
+//        auto a = *f_it / *m_it + g;
+//        *x_it += dt * (*v_it + dt_2 * *a_it);
+//        *v_it += dt_2 * (a + *a_it);
+//        *a_it = a;
+//    }
+//}
 
 }
 
