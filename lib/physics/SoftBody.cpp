@@ -149,6 +149,7 @@ SoftBody::updateMesh()
         ++rest_it;
         ++hood_it;
     }
+    mMesh->updateNormals();
 }
 
 double

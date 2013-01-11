@@ -100,3 +100,18 @@ Mesh::loadObj(const std::string& filename, Mesh& mesh)
 
     return true;
 }
+
+void
+Mesh::updateNormals()
+{
+    auto face_it = mFaces.begin();
+    for (auto& n : mNormals) {
+        uint32_t p = (*face_it)[0];
+        uint32_t q = (*face_it)[1];
+        uint32_t r = (*face_it)[2];
+        Vector3d v1 = mVerts[q] - mVerts[p];
+        Vector3d v2 = mVerts[r] - mVerts[p];
+        n = v1.cross(v2).normalized();
+        ++face_it;
+    }
+}

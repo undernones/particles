@@ -19,6 +19,8 @@ public:
 
     std::vector<Eigen::Vector3d>& verts() { return mVerts; }
 
+    void updateNormals();
+
 private:
     std::vector<Eigen::Vector3d> mNormals;
     std::vector<Eigen::Vector3d> mVerts;
