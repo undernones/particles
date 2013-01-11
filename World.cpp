@@ -66,7 +66,6 @@ World::step(double dt)
         body->clearForces();
         body->computeInternalForces();
 
-        // Integrate
         integrateExplicit(dt, *body);
         //integrateLeapfrog(dt, *body);
 
@@ -80,6 +79,8 @@ World::step(double dt)
                 }
             }
         }
+
+        body->updateMesh();
     }
 }
 

@@ -320,7 +320,7 @@ GlWidget::renderBody() const
     }
 
     if (hasSelected && true) { // TODO: view neighborhoods
-        const Vector3d& basePos = mBody->posWorld[mSelected];
+        //const Vector3d& basePos = mBody->posWorld[mSelected];
 
         glDisable(GL_LIGHTING);
         for (auto& n : mBody->neighborhoods[mSelected]) {

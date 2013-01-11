@@ -3,6 +3,7 @@
 const uint32_t Neighborhood::MAX_SIZE = 8;
 
 Neighborhood::Neighborhood() : Collection<Neighbor>()
+,   mSum(0)
 {
     reserve(MAX_SIZE);
 }
@@ -26,11 +27,17 @@ Neighborhood::findNeighbor(uint32_t j)
 }
 
 double
-Neighborhood::wSum() const
+Neighborhood::computeSum()
 {
-    double sum = 0;
+    mSum = 0;
     for (auto& n : *this) {
-        sum += n.w;
+        mSum += n.w;
     }
-    return sum;
+    return mSum;
+}
+
+double
+Neighborhood::sum() const
+{
+    return mSum;
 }

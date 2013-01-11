@@ -1,9 +1,9 @@
 #include "SoftBody.h"
 #include <fstream>
 #include <geom/KdTree.h>
+#include <geom/Mesh.h>
 #include "kernels.h"
 #include "../Utils.h" // TODO: dependencies!
-#include <iostream>
 
 using Eigen::Vector3d;
 using Eigen::Matrix3d;
@@ -98,6 +98,67 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
 
 SoftBody::~SoftBody()
 {
+}
+
+void
+SoftBody::setMesh(Mesh* mesh)
+{
+    mMesh = mesh;
+
+    auto radius = avgRadius();
+    auto kdTree = KdTree(posRest);
+
+    std::vector<uint32_t> indices;
+    indices.reserve(Neighborhood::MAX_SIZE + 1);
+
+    mRestMesh.reserve(mesh->verts().size());
+    mMeshNeighborhoods.reserve(mesh->verts().size());
+
+    for (auto& v : mesh->verts()) {
+        mRestMesh.push_back(v);
+
+        mMeshNeighborhoods.push_back(Neighborhood());
+        auto& hood = mMeshNeighborhoods.back();
+
+        kdTree.neighbors(posRest, v, Neighborhood::MAX_SIZE + 1, radius, indices);
+        for (auto j : indices) {
+            auto distance = (posRest[j] - v).norm();
+            auto weight = Kernels::standardkernel(radius, distance);
+            hood.push_back(Neighbor(j, Vector3d(), weight));
+        }
+        hood.computeSum();
+    }
+}
+
+void
+SoftBody::updateMesh()
+{
+    auto rest_it = mRestMesh.begin();
+    auto hood_it = mMeshNeighborhoods.begin();
+    for (auto& v : mMesh->verts()) {
+        // compute normalized weighted average of neighbors' displacements.
+        Vector3d displacement(0, 0, 0);
+        for (auto& n : *hood_it) {
+            displacement += n.w * (posRest[n.index] - posWorld[n.index]);
+        }
+        displacement /= hood_it->sum();
+
+        // set v to rest_it + avg displacement.
+        v = *rest_it + displacement;
+
+        ++rest_it;
+        ++hood_it;
+    }
+}
+
+double
+SoftBody::avgRadius() const
+{
+    double sum = 0;
+    for (auto r : radii) {
+        sum += r;
+    }
+    return sum / radii.size();
 }
 
 void
@@ -198,7 +259,7 @@ SoftBody::updateRestQuantities()
             n.u = posRest[n.index] - *u_it;
             basis += n.u * n.u.transpose() * n.w;
         }
-        *v_it = sqrt(basis.determinant() / Utils::cube(n_it->wSum()));
+        *v_it = sqrt(basis.determinant() / Utils::cube(n_it->computeSum()));
         *m_it = mMaterial.density * *v_it;
         basis = basis.inverse().eval();
 

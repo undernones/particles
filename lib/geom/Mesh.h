@@ -17,6 +17,8 @@ public:
     const std::vector<Triangle>& faces() const { return mFaces; }
     const BBox& bbox() const { return mBBox; }
 
+    std::vector<Eigen::Vector3d>& verts() { return mVerts; }
+
 private:
     std::vector<Eigen::Vector3d> mNormals;
     std::vector<Eigen::Vector3d> mVerts;

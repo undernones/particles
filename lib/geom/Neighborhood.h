@@ -14,7 +14,11 @@ public:
     bool hasNeighbor(uint32_t j);
     Neighbor findNeighbor(uint32_t j);
 
-    double wSum() const;
+    double computeSum();
+    double sum() const;
+
+private:
+    double mSum;
 };
 
 #endif // GEOM_NEIGHBORHOOD_H

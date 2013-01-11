@@ -40,13 +40,17 @@ public:
 
     inline size_t size() const { return bases.size(); }
 
+    // Don't call setMesh() until after the points have been loaded.
+    void setMesh(Mesh* mesh);
     const Mesh* mesh() const { return mMesh; }
-    void setMesh(const Mesh* mesh) { mMesh = mesh; }
     bool hasMesh() const { return mMesh != nullptr; }
+    void updateMesh();
 
 private:
     Material mMaterial;
-    const Mesh* mMesh;
+    Mesh* mMesh;
+    VectorList mRestMesh;
+    std::vector<Neighborhood> mMeshNeighborhoods;
 
     SoftBody(const SoftBody&);
     SoftBody& operator =(const SoftBody&);
@@ -55,6 +59,8 @@ private:
     void computeStrains();
     void computeStresses();
     void computeForces();
+
+    double avgRadius() const;
 };
 
 #endif // PHYSICS_SOFTBODY_H
