@@ -139,7 +139,7 @@ SoftBody::updateMesh()
         // compute normalized weighted average of neighbors' displacements.
         Vector3d displacement(0, 0, 0);
         for (auto& n : *hood_it) {
-            displacement += n.w * (posRest[n.index] - posWorld[n.index]);
+            displacement += n.w * (posWorld[n.index] - posRest[n.index]);
         }
         displacement /= hood_it->sum();
 
