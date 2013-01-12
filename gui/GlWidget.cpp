@@ -282,7 +282,7 @@ GlWidget::renderBody() const
 
     // Draw points
     uint32_t index = 0;
-    for (auto p : mBody->posWorld) {
+    for (auto& p : mBody->posWorld) {
         Eigen::Vector3d color = rainbow[index % 7];
         if (hasSelected) {
             color *= 0.2;
