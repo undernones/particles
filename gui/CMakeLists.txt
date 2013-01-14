@@ -55,6 +55,7 @@ endif()
 
 set(SOURCES
     main.cpp
+    FrameSaver.cpp
     GlWidget.cpp
     MainWindow.cpp
     MatrixViewer.cpp

@@ -11,6 +11,7 @@ class Mesh
 {
 public:
     static bool loadObj(const std::string& filename, Mesh& mesh);
+    bool saveObj(const std::string& filename) const;
 
     const std::vector<Eigen::Vector3d>& normals() const { return mNormals; }
     const std::vector<Eigen::Vector3d>& verts() const { return mVerts; }

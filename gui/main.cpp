@@ -2,6 +2,7 @@
 #include <geom/Mesh.h>
 #include <physics/PlaneObstacle.h>
 #include <physics/SoftBody.h>
+#include "FrameSaver.h"
 #include "MainWindow.h"
 #include "SimThread.h"
 #include "../Options.h" // TODO: dependencies!
@@ -38,6 +39,9 @@ int main(int argc, char* argv[])
     w.connect(&thread, SIGNAL(stepped()), SLOT(stepped()));
     w.raise();
     w.show();
+
+    FrameSaver saver(body, Options::framesDir(), Options::dt(), Options::fps());
+    saver.connect(&thread, SIGNAL(stepped()), SLOT(stepped()));
 
     thread.init(Options::duration(), Options::dt());
     thread.start(QThread::NormalPriority);

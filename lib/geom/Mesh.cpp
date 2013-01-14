@@ -1,7 +1,5 @@
 #include "Mesh.h"
-#include <istream>
 #include <fstream>
-#include <iostream>
 
 using Eigen::Vector3d;
 
@@ -99,6 +97,23 @@ Mesh::loadObj(const std::string& filename, Mesh& mesh)
     }
 
     return true;
+}
+
+bool
+Mesh::saveObj(const std::string& filename) const
+{
+    std::ofstream outf(filename.c_str(), std::ios::out);
+    if (!outf.is_open()) return false;
+
+    for (auto& v : mVerts) {
+        outf << "v " << v[0] << " " << v[1] << " " << v[2] << std::endl;
+    }
+
+    for (auto& f : mFaces) {
+        outf << "f " << f[0]+1 << " " << f[1]+1 << " " << f[2]+1 << std::endl;
+    }
+
+    return outf.good();
 }
 
 void

@@ -19,3 +19,5 @@ moc_*
 qrc_*
 ui_*
 *.qrc.depends
+
+frames/*
