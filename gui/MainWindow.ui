@@ -20,7 +20,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="GlWidget" name="glWidget" native="true">
+      <widget class="SimGlWidget" name="glWidget" native="true">
        <property name="minimumSize">
         <size>
          <width>300</width>
@@ -127,9 +127,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>GlWidget</class>
-   <extends>QWidget</extends>
-   <header>GlWidget.h</header>
+   <class>SimGlWidget</class>
+   <extends>GlWidget</extends>
+   <header>SimGlWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

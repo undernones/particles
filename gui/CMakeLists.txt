@@ -59,6 +59,7 @@ set(SOURCES
     GlWidget.cpp
     MainWindow.cpp
     MatrixViewer.cpp
+    SimGlWidget.cpp
     SimThread.cpp
     ../Options.cpp
     ../World.cpp
