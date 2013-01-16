@@ -12,6 +12,10 @@ public:
     explicit ObjMainWindow(QWidget* parent = NULL);
     ~ObjMainWindow();
 
+protected:
+    void timerEvent(QTimerEvent* event);
+    void closeEvent(QCloseEvent* event);
+
 private:
     Ui_ObjMainWindow* ui;
     int mTimer;
@@ -22,8 +26,8 @@ private:
 public slots:
     void rewind();
     void togglePlayPause(bool toggled);
-    void nextTimestep();
-    void prevTimestep();
+    void nextFrame();
+    void prevFrame();
     void frameLoaded();
 };
 

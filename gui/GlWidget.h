@@ -5,6 +5,7 @@
 #include <QtOpenGL/QGLWidget>
 #include <Eigen>
 
+class Mesh;
 class GlWidget : public QGLWidget
 {
     Q_OBJECT
@@ -29,6 +30,8 @@ protected:
     virtual void mouseReleaseEvent(QMouseEvent*);
     virtual void mouseMoveEvent(QMouseEvent*);
     virtual void wheelEvent(QWheelEvent*);
+
+    static void renderMesh(const Mesh& mesh);
 
 private:
     GLfloat mLightPos[4];

@@ -94,11 +94,14 @@
     <string>Take a single timestep</string>
    </property>
    <property name="shortcut">
-    <string>N</string>
+    <string>Right</string>
    </property>
   </action>
   <action name="actionPlayPause">
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="icon">
@@ -158,5 +161,70 @@
  <resources>
   <include location="images.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionPlayPause</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>ObjMainWindow</receiver>
+   <slot>togglePlayPause(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>457</x>
+     <y>328</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionRewind</sender>
+   <signal>triggered()</signal>
+   <receiver>ObjMainWindow</receiver>
+   <slot>rewind()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>457</x>
+     <y>328</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionPrevious</sender>
+   <signal>triggered()</signal>
+   <receiver>ObjMainWindow</receiver>
+   <slot>prevFrame()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>457</x>
+     <y>328</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionNext</sender>
+   <signal>triggered()</signal>
+   <receiver>ObjMainWindow</receiver>
+   <slot>nextFrame()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>457</x>
+     <y>328</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
