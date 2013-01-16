@@ -13,7 +13,8 @@ main(int argc, char* argv[])
     w.raise();
     w.show();
 
-    thread.init("frames");
+    std::string dir = argc > 1 ? argv[1] : "frames";
+    thread.init(dir);
     thread.start(QThread::NormalPriority);
 
     return a.exec();
