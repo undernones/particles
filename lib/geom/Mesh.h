@@ -10,6 +10,8 @@
 class Mesh
 {
 public:
+    static std::string makeObjName(const std::string& dir, uint32_t frameNum);
+
     static bool loadObj(const std::string& filename, Mesh& mesh);
     bool saveObj(const std::string& filename) const;
 

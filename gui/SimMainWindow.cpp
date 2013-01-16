@@ -1,11 +1,11 @@
-#include "MainWindow.h"
-#include "ui_MainWindow.h"
+#include "SimMainWindow.h"
+#include "ui_SimMainWindow.h"
 #include <physics/SoftBody.h>
 #include "SimThread.h"
 
-MainWindow::MainWindow(QWidget* parent) :
+SimMainWindow::SimMainWindow(QWidget* parent) :
     QMainWindow(parent),
-    ui(new Ui_MainWindow)
+    ui(new Ui_SimMainWindow)
 {
     ui->setupUi(this);
 
@@ -21,13 +21,13 @@ MainWindow::MainWindow(QWidget* parent) :
     ui->actionPlayPause->setChecked(thread.isPaused());
 }
 
-MainWindow::~MainWindow()
+SimMainWindow::~SimMainWindow()
 {
     delete ui;
 }
 
 void
-MainWindow::setSoftBody(const SoftBody* body)
+SimMainWindow::setSoftBody(const SoftBody* body)
 {
     const Eigen::Matrix3d* matrix = NULL;
 
@@ -40,19 +40,19 @@ MainWindow::setSoftBody(const SoftBody* body)
 }
 
 void
-MainWindow::paused()
+SimMainWindow::paused()
 {
     ui->actionNext->setEnabled(true);
 }
 
 void
-MainWindow::resumed()
+SimMainWindow::resumed()
 {
     ui->actionNext->setEnabled(false);
 }
 
 void
-MainWindow::stepped()
+SimMainWindow::stepped()
 {
     ui->glWidget->update();
 

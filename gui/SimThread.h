@@ -1,5 +1,5 @@
-#ifndef VIEWER_SIMTHREAD_H
-#define VIEWER_SIMTHREAD_H
+#ifndef GUI_SIMTHREAD_H
+#define GUI_SIMTHREAD_H
 
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
@@ -43,4 +43,4 @@ public slots:
     void step();
 };
 
-#endif // VIEWER_SIMTHREAD_H
+#endif // GUI_SIMTHREAD_H

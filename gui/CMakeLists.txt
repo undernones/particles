@@ -53,11 +53,11 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
     add_definitions(-DNDEBUG)
 endif()
 
-set(SOURCES
-    main.cpp
+set(SIM_SRC
+    SimMain.cpp
     FrameSaver.cpp
     GlWidget.cpp
-    MainWindow.cpp
+    SimMainWindow.cpp
     MatrixViewer.cpp
     SimGlWidget.cpp
     SimThread.cpp
@@ -66,23 +66,41 @@ set(SOURCES
 )
 # TODO: ^ Dependencies!
 
-set(FORMS MainWindow.ui MatrixViewer.ui)
+set(OBJPLAY_SRC
+    ObjPlay.cpp
+    GlWidget.cpp
+    MeshSet.cpp
+    ObjGlWidget.cpp
+    ObjLoadThread.cpp
+    ObjMainWindow.cpp
+)
+
+set(SIM_FORMS SimMainWindow.ui MatrixViewer.ui)
+set(OBJ_FORMS ObjMainWindow.ui)
 set(RESOURCES images.qrc)
-set(LIBS geom physics)
 
 set(CMAKE_AUTOMOC ON)
 set(QT_USE_QTOPENGL TRUE)
-qt4_wrap_ui(FORMS_HEADERS ${FORMS})
+qt4_wrap_ui(SIM_FORMS_HEADERS ${SIM_FORMS})
+qt4_wrap_ui(OBJ_FORMS_HEADERS ${OBJ_FORMS})
 qt4_add_resources(RESOURCES_RCC ${RESOURCES})
 
 include(${QT_USE_FILE})
 add_definitions(${QT_DEFINITIONS} -DPCUBE -DQTVIEWER)
 
-add_executable(gui ${SOURCES} 
-    ${FORMS_HEADERS}
+add_executable(gui
+    ${SIM_SRC} 
+    ${SIM_FORMS_HEADERS}
     ${RESOURCES_RCC}
 )
-target_link_libraries(gui ${LIBS} ${EXTRA_LIBS} ${QT_LIBRARIES})
+target_link_libraries(gui geom physics ${EXTRA_LIBS} ${QT_LIBRARIES})
+
+add_executable(objplay
+    ${OBJPLAY_SRC}
+    ${OBJ_FORMS_HEADERS}
+    ${RESOURCES_RCC}
+)
+target_link_libraries(objplay geom ${EXTRA_LIBS} ${QT_LIBRARIES})
 
 message(STATUS)
 message(STATUS "--------------------------------------------------------------------------------")

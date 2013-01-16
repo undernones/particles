@@ -19,6 +19,15 @@ std::string nextLine(std::istream& in)
 
 }
 
+std::string
+Mesh::makeObjName(const std::string& dir, uint32_t frameNum)
+{
+    static char result[1024];
+    std::string format(dir + "/surface.%06u.obj");
+    sprintf(result, format.c_str(), frameNum);
+    return std::string(result);
+}
+
 bool
 Mesh::loadObj(const std::string& filename, Mesh& mesh)
 {

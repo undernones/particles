@@ -2,20 +2,6 @@
 #include <geom/Mesh.h>
 #include <physics/SoftBody.h>
 
-namespace
-{
-
-std::string
-makeObjName(const std::string& dir, uint32_t frameNum)
-{
-    static char result[1024];
-    std::string format(dir + "/surface.%06u.obj");
-    sprintf(result, format.c_str(), frameNum);
-    return std::string(result);
-}
-
-}
-
 FrameSaver::FrameSaver(const SoftBody& body, const std::string& framesDir, double dt, double fps)
 :   QObject()
 ,   mBody(body)
@@ -36,7 +22,7 @@ void
 FrameSaver::stepped()
 {
     if (mElapsed > mSpf) {
-        mBody.mesh()->saveObj(makeObjName(mFramesDir, mFrame));
+        mBody.mesh()->saveObj(Mesh::makeObjName(mFramesDir, mFrame));
         mElapsed = 0;
         mFrame++;
     }

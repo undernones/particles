@@ -3,12 +3,13 @@
 #include <physics/PlaneObstacle.h>
 #include <physics/SoftBody.h>
 #include "FrameSaver.h"
-#include "MainWindow.h"
+#include "SimMainWindow.h"
 #include "SimThread.h"
 #include "../Options.h" // TODO: dependencies!
 #include "../World.h" // TODO: dependencies!
 
-int main(int argc, char* argv[])
+int
+main(int argc, char* argv[])
 {
     Options::init(argc, argv);
 
@@ -34,7 +35,7 @@ int main(int argc, char* argv[])
     }
 
     QApplication a(argc, argv);
-    MainWindow w;
+    SimMainWindow w;
     w.setSoftBody(World::bodies()[0]);
     w.connect(&thread, SIGNAL(stepped()), SLOT(stepped()));
     w.raise();

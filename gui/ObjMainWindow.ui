@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>ObjMainWindow</class>
+ <widget class="QMainWindow" name="ObjMainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Surface Animation Replay</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -20,7 +20,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="SimGlWidget" name="glWidget" native="true">
+      <widget class="ObjGlWidget" name="glWidget" native="true">
        <property name="minimumSize">
         <size>
          <width>300</width>
@@ -34,16 +34,6 @@
          <widget class="QLabel" name="label">
           <property name="text">
            <string>Particle Info:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="MatrixViewer" name="matrixViewer" native="true">
-          <property name="maximumSize">
-           <size>
-            <width>600</width>
-            <height>16777215</height>
-           </size>
           </property>
          </widget>
         </item>
@@ -127,15 +117,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SimGlWidget</class>
-   <extends>GlWidget</extends>
-   <header>SimGlWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>MatrixViewer</class>
+   <class>ObjGlWidget</class>
    <extends>QWidget</extends>
-   <header>MatrixViewer.h</header>
+   <header>ObjGlWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
