@@ -9,7 +9,7 @@ main(int argc, char* argv[])
 
     QApplication a(argc, argv);
     ObjMainWindow w;
-    w.connect(&thread, SIGNAL(frameLoaded()), SLOT(stepped()));
+    w.connect(&thread, SIGNAL(frameLoaded()), SLOT(frameLoaded()));
     w.raise();
     w.show();
 

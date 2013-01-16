@@ -14,11 +14,17 @@ public:
 
 private:
     Ui_ObjMainWindow* ui;
+    int mTimer;
+
+    void refresh();
+    void updateStatusBar();
 
 public slots:
-    void paused();
-    void resumed();
-    void stepped();
+    void rewind();
+    void togglePlayPause(bool toggled);
+    void nextTimestep();
+    void prevTimestep();
+    void frameLoaded();
 };
 
 #endif // QT_OBJMAINWINDOW_H

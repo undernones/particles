@@ -1,9 +1,11 @@
 #include "ObjMainWindow.h"
 #include "ui_ObjMainWindow.h"
+#include <iostream>
 
 ObjMainWindow::ObjMainWindow(QWidget* parent)
-:    QMainWindow(parent)
-,    ui(new Ui_ObjMainWindow)
+:   QMainWindow(parent)
+,   ui(new Ui_ObjMainWindow)
+,   mTimer(-1)
 {
     ui->setupUi(this);
 }
@@ -14,24 +16,36 @@ ObjMainWindow::~ObjMainWindow()
 }
 
 void
-ObjMainWindow::paused()
+ObjMainWindow::refresh()
 {
-    ui->actionNext->setEnabled(true);
 }
 
 void
-ObjMainWindow::resumed()
+ObjMainWindow::updateStatusBar()
 {
-    ui->actionNext->setEnabled(false);
 }
 
 void
-ObjMainWindow::stepped()
+ObjMainWindow::rewind()
 {
-    ui->glWidget->update();
+}
 
-    //// Only update the matrix viewer if we are stepping interactively.
-    //if (SimThread::instance().isPaused()) {
-    //    ui->matrixViewer->refresh();
-    //}
+void
+ObjMainWindow::togglePlayPause(bool toggled)
+{
+}
+
+void
+ObjMainWindow::nextTimestep()
+{
+}
+
+void
+ObjMainWindow::prevTimestep()
+{
+}
+
+void
+ObjMainWindow::frameLoaded()
+{
 }
