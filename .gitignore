@@ -7,6 +7,7 @@ tags
 # binaries
 headless
 gui/gui
+gui/objplay
 *.a
 a.out
 accordion
