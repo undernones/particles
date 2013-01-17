@@ -131,6 +131,8 @@ SoftBody::setMesh(Mesh* mesh)
 void
 SoftBody::updateMesh()
 {
+    if (mMesh == nullptr) return;
+
     auto rest_it = mRestMesh.begin();
     auto hood_it = mMeshNeighborhoods.begin();
     for (auto& v : mMesh->verts()) {
@@ -326,6 +328,7 @@ SoftBody::computeStresses()
 void
 SoftBody::computeForces()
 {
+    auto vel_it = velocities.begin();
     auto v_it = volumes.begin();
     auto stress_it = stresses.begin();
     auto basis_it = bases.begin();
@@ -342,8 +345,13 @@ SoftBody::computeForces()
             Vector3d force = Fe * (n.u * n.w);
             forces[n.index] += force;
             f -= force;
+
+            Vector3d viscous = volume * (velocities[n.index] - *vel_it) * n.w;
+            forces[n.index] -= viscous;
+            f += viscous;
         }
 
+        ++vel_it;
         ++v_it;
         ++stress_it;
         ++basis_it;

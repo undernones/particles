@@ -42,7 +42,9 @@ main(int argc, char* argv[])
     w.show();
 
     FrameSaver saver(body, Options::framesDir(), Options::dt(), Options::fps());
-    saver.connect(&thread, SIGNAL(stepped()), SLOT(stepped()));
+    if (body.mesh() != nullptr) {
+        saver.connect(&thread, SIGNAL(stepped()), SLOT(stepped()));
+    }
 
     thread.init(Options::duration(), Options::dt());
     thread.start(QThread::NormalPriority);
