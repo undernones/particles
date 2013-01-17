@@ -141,9 +141,21 @@ Mesh::updateNormals()
 }
 
 void
+Mesh::scale(double k)
+{
+    for (auto& vert : mVerts) {
+        vert *= k;
+    }
+    mBBox.lo *= k;
+    mBBox.hi *= k;
+}
+
+void
 Mesh::translate(const Eigen::Vector3d& v)
 {
     for (auto& vert : mVerts) {
         vert += v;
     }
+    mBBox.lo += v;
+    mBBox.hi += v;
 }

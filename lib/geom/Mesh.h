@@ -24,6 +24,7 @@ public:
 
     void updateNormals();
 
+    void scale(double k);
     void translate(const Eigen::Vector3d& v);
 
 private:
