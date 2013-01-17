@@ -139,3 +139,11 @@ Mesh::updateNormals()
         ++face_it;
     }
 }
+
+void
+Mesh::translate(const Eigen::Vector3d& v)
+{
+    for (auto& vert : mVerts) {
+        vert += v;
+    }
+}

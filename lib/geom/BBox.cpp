@@ -16,35 +16,41 @@ BBox::contains(const Eigen::Vector3d& p) const
     ;
 }
 
-BBox
-BBox::add(const BBox& other) const
+void
+BBox::add(const BBox& other)
 {
-    BBox result(*this);
+    if (other.lo[0] < lo[0]) lo[0] = other.lo[0];
+    if (other.lo[1] < lo[1]) lo[1] = other.lo[1];
+    if (other.lo[2] < lo[2]) lo[2] = other.lo[2];
 
-    if (other.lo[0] < lo[0]) result.lo[0] = other.lo[0];
-    if (other.lo[1] < lo[1]) result.lo[1] = other.lo[1];
-    if (other.lo[2] < lo[2]) result.lo[2] = other.lo[2];
-
-    if (other.hi[0] > hi[0]) result.hi[0] = other.hi[0];
-    if (other.hi[1] > hi[1]) result.hi[1] = other.hi[1];
-    if (other.hi[2] > hi[2]) result.hi[2] = other.hi[2];
-
-    return result;
+    if (other.hi[0] > hi[0]) hi[0] = other.hi[0];
+    if (other.hi[1] > hi[1]) hi[1] = other.hi[1];
+    if (other.hi[2] > hi[2]) hi[2] = other.hi[2];
 }
 
-BBox
-BBox::add(const Eigen::Vector3d& p) const
+void
+BBox::add(const Eigen::Vector3d& p)
 {
-    BBox result(*this);
+    if (p[0] < lo[0]) lo[0] = p[0];
+    if (p[1] < lo[1]) lo[1] = p[1];
+    if (p[2] < lo[2]) lo[2] = p[2];
 
-    if (p[0] < lo[0]) result.lo[0] = p[0];
-    if (p[1] < lo[1]) result.lo[1] = p[1];
-    if (p[2] < lo[2]) result.lo[2] = p[2];
-
-    if (p[0] > hi[0]) result.hi[0] = p[0];
-    if (p[1] > hi[1]) result.hi[1] = p[1];
-    if (p[2] > hi[2]) result.hi[2] = p[2];
-
-    return result;
+    if (p[0] > hi[0]) hi[0] = p[0];
+    if (p[1] > hi[1]) hi[1] = p[1];
+    if (p[2] > hi[2]) hi[2] = p[2];
 }
 
+void
+BBox::add(const std::vector<Eigen::Vector3d>& points)
+{
+    for (auto& p : points) {
+        add(p);
+    }
+}
+
+Eigen::Vector3d
+BBox::center() const
+{
+    Eigen::Vector3d toCenter = 0.5 * (hi - lo);
+    return lo + toCenter;
+}

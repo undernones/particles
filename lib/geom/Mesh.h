@@ -24,6 +24,8 @@ public:
 
     void updateNormals();
 
+    void translate(const Eigen::Vector3d& v);
+
 private:
     std::vector<Eigen::Vector3d> mNormals;
     std::vector<Eigen::Vector3d> mVerts;

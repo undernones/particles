@@ -49,6 +49,7 @@ identity(SoftBody::MatrixList& matrices)
 }
 
 SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
+    mBBox(),
     mMaterial(material),
     mMesh(nullptr)
 {
@@ -64,6 +65,7 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
         x = *u;
         ++u;
     }
+    mBBox.add(posWorld);
 
     bases.resize(size);
     identity(bases);
@@ -103,6 +105,9 @@ SoftBody::~SoftBody()
 void
 SoftBody::setMesh(Mesh* mesh)
 {
+    Vector3d toTranslate = mBBox.center() - mesh->bbox().center();
+    mesh->translate(toTranslate);
+
     mMesh = mesh;
 
     auto radius = avgRadius() / 2;

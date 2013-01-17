@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <Eigen>
+#include <geom/BBox.h>
 #include <geom/Neighborhood.h>
 #include "Material.h"
 
@@ -47,6 +48,7 @@ public:
     void updateMesh();
 
 private:
+    BBox mBBox;
     Material mMaterial;
     Mesh* mMesh;
     VectorList mRestMesh;
