@@ -110,7 +110,7 @@ SoftBody::setMesh(Mesh* mesh)
 
     mMesh = mesh;
 
-    auto radius = avgRadius() / 2;
+    auto radius = avgRadius();
     auto kdTree = KdTree(posRest);
 
     mRestMesh.reserve(mesh->verts().size());
@@ -123,7 +123,7 @@ SoftBody::setMesh(Mesh* mesh)
         auto& hood = mMeshNeighborhoods.back();
 
         std::vector<uint32_t> indices;
-        kdTree.neighbors(posRest, v, Neighborhood::MAX_SIZE, radius, indices);
+        kdTree.neighbors(posRest, v, -1, radius, indices); // Get ALL neighbors
         for (auto j : indices) {
             auto distance = (posRest[j] - v).norm();
             auto weight = Kernels::standardkernel(radius, distance);

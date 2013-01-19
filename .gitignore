@@ -22,4 +22,4 @@ ui_*
 *.qrc.depends
 
 frames/*
-frames.bunny
+frames.*
