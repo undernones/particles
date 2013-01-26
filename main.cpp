@@ -1,6 +1,5 @@
 #include <iostream>
 #include <stdexcept>
-#include <physics/SoftBody.h>
 #include "Options.h"
 #include "Utils.h"
 #include "World.h"
@@ -16,14 +15,7 @@ main(int argc, char* argv[])
 {
     try {
         Options::init(argc, argv);
-
-        Material material = {
-            Options::mu(),
-            Options::lambda(),
-            Options::density(),
-        };
-        SoftBody body(Options::particleFile(), material);
-        World::addSoftBody(&body);
+        World::init();
 
         uint32_t totalSteps = Options::duration() / Options::dt();
         std::cout << "Duration:    " << Options::duration() << "s" << std::endl

@@ -8,6 +8,8 @@ class SoftBody;
 class World
 {
 public:
+    static void init();
+
     static void step(double dt);
     static void addSoftBody(SoftBody* body);
     static void addObstacle(Obstacle* obstacle);

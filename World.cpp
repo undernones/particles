@@ -1,5 +1,7 @@
 #include "World.h"
+#include <geom/Mesh.h>
 #include <physics/Obstacle.h>
+#include <physics/PlaneObstacle.h>
 #include <physics/SoftBody.h>
 #include "Options.h"
 
@@ -57,6 +59,25 @@ void
 World::addObstacle(Obstacle* obstacle)
 {
     sObstacles.push_back(obstacle);
+}
+
+void
+World::init()
+{
+    Material material = {
+        Options::mu(),
+        Options::lambda(),
+        Options::density(),
+    };
+    SoftBody* body = new SoftBody(Options::particleFile(), material);
+
+    Mesh* mesh = new Mesh;
+    if (Mesh::loadObj(Options::meshFile(), *mesh)) {
+        body->setMesh(mesh);
+    }
+
+    addSoftBody(body);
+    addObstacle(new PlaneObstacle(Eigen::Vector3d(0, 1, 0), -1.5, Options::friction()));
 }
 
 void
