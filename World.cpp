@@ -77,7 +77,7 @@ World::init()
     }
 
     addSoftBody(body);
-    addObstacle(new PlaneObstacle(Eigen::Vector3d(0, 1, 0), -1.5, Options::friction()));
+    addObstacle(new PlaneObstacle(Eigen::Vector3d(0, 1, 0), -1, Options::friction()));
 }
 
 void

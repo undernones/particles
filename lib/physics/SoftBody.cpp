@@ -333,6 +333,12 @@ SoftBody::computeStresses()
 void
 SoftBody::computeForces()
 {
+    for (auto& hood : neighborhoods) {
+        for (auto& n : hood) {
+            n.f.setZero();
+        }
+    }
+
     auto vel_it = velocities.begin();
     auto v_it = volumes.begin();
     auto stress_it = stresses.begin();
@@ -343,16 +349,16 @@ SoftBody::computeForces()
         double volume = *v_it;
         const Matrix3d& stress = *stress_it;
         const Matrix3d& basis = *basis_it;
-        const Neighborhood& neighborhood = *n_it;
+        Neighborhood& neighborhood = *n_it;
 
         Matrix3d Fe = -2 * volume * stress * basis;
         for (auto& n : neighborhood) {
             Vector3d force = Fe * (n.u * n.w);
-            forces[n.index] += force;
+            n.f += force;
             f -= force;
 
             Vector3d viscous = volume * (velocities[n.index] - *vel_it) * n.w;
-            forces[n.index] -= viscous;
+            n.f -= viscous;
             f += viscous;
         }
 
@@ -361,6 +367,12 @@ SoftBody::computeForces()
         ++stress_it;
         ++basis_it;
         ++n_it;
+    }
+
+    for (auto& hood : neighborhoods) {
+        for (auto& n : hood) {
+            forces[n.index] += n.f;
+        }
     }
 }
 

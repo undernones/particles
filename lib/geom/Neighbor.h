@@ -9,6 +9,7 @@ struct Neighbor
 
     uint32_t index;
     Eigen::Vector3d u;
+    Eigen::Vector3d f;
     double w;
 
     Neighbor();
