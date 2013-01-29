@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(particles)
 
+# Questions about Qt? Look here:
+# http://developer.qt.nokia.com/quarterly/view/using_cmake_to_build_qt_projects
+
 #
 # If the user specifies -DCMAKE_BUILD_TYPE on the command line, take their
 # definition and dump it in the cache along with proper documentation.
@@ -10,6 +13,13 @@ if (DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the build type.  Options are: Debug, Release")
 else()
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the build type.  Options are: Debug, Release")
+endif()
+
+find_package(Qt4 REQUIRED)
+if (QT_FOUND)
+    include(${QT_USE_FILE})
+else()
+    message("FATAL ERROR: Qt4 not found.")
 endif()
 
 include_directories(
@@ -36,6 +46,9 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
     add_definitions(-DNDEBUG)
 endif ()
 
+set(CMAKE_AUTOMOC ON)
+set(QT_USE_QTOPENGL TRUE)
+
 set (GEOM_SRC
     lib/geom/BBox.cpp
     lib/geom/KdTree.cpp
@@ -45,7 +58,6 @@ set (GEOM_SRC
     lib/geom/Triangle.cpp
 )
 add_library(geom ${GEOM_SRC})
-target_link_libraries(geom ${LIBS})
 
 set (PHYSICS_SRC
     lib/physics/Obstacle.cpp
@@ -53,15 +65,22 @@ set (PHYSICS_SRC
     lib/physics/SoftBody.cpp
 )
 add_library(physics ${PHYSICS_SRC})
-target_link_libraries(physics geom ${LIBS})
+target_link_libraries(physics geom)
+
+set (SIM_SRC
+    lib/simulator/FrameSaver.cpp
+    lib/simulator/SimThread.cpp
+    lib/simulator/World.cpp
+)
+add_library(simulator ${SIM_SRC})
+target_link_libraries(simulator physics geom)
 
 set (CORE_SRC
     Options.cpp
     Utils.cpp
-    World.cpp
 )
 add_executable(headless main.cpp ${CORE_SRC})
-target_link_libraries(headless physics geom ${LIBS})
+target_link_libraries(headless physics geom simulator)
 
 add_subdirectory(gui)
 

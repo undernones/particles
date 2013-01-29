@@ -1,7 +1,7 @@
 #include "SimMainWindow.h"
 #include "ui_SimMainWindow.h"
 #include <physics/SoftBody.h>
-#include "SimThread.h"
+#include <simulator/SimThread.h>
 
 SimMainWindow::SimMainWindow(QWidget* parent) :
     QMainWindow(parent),

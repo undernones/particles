@@ -55,14 +55,11 @@ endif()
 
 set(SIM_SRC
     SimMain.cpp
-    FrameSaver.cpp
     GlWidget.cpp
     SimMainWindow.cpp
     MatrixViewer.cpp
     SimGlWidget.cpp
-    SimThread.cpp
     ../Options.cpp
-    ../World.cpp
 )
 # TODO: ^ Dependencies!
 
@@ -85,15 +82,14 @@ qt4_wrap_ui(SIM_FORMS_HEADERS ${SIM_FORMS})
 qt4_wrap_ui(OBJ_FORMS_HEADERS ${OBJ_FORMS})
 qt4_add_resources(RESOURCES_RCC ${RESOURCES})
 
-include(${QT_USE_FILE})
-add_definitions(${QT_DEFINITIONS} -DPCUBE -DQTVIEWER)
+add_definitions(${QT_DEFINITIONS})
 
 add_executable(gui
     ${SIM_SRC} 
     ${SIM_FORMS_HEADERS}
     ${RESOURCES_RCC}
 )
-target_link_libraries(gui geom physics ${EXTRA_LIBS} ${QT_LIBRARIES})
+target_link_libraries(gui geom physics simulator ${EXTRA_LIBS} ${QT_LIBRARIES})
 
 add_executable(objplay
     ${OBJPLAY_SRC}

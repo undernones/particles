@@ -1,11 +1,11 @@
 #include <QtGui/QApplication>
 #include <geom/Mesh.h>
 #include <physics/SoftBody.h>
-#include "FrameSaver.h"
+#include <simulator/FrameSaver.h>
+#include <simulator/SimThread.h>
+#include <simulator/World.h>
 #include "SimMainWindow.h"
-#include "SimThread.h"
 #include "../Options.h" // TODO: dependencies!
-#include "../World.h" // TODO: dependencies!
 
 int
 main(int argc, char* argv[])

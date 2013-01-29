@@ -1,5 +1,5 @@
 #include "SimThread.h"
-#include "../World.h" // TODO: Dependencies!
+#include "World.h"
 
 SimThread::SimThread(QObject* parent) : QThread(parent),
     mIsPaused(false),

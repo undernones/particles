@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdexcept>
+#include <simulator/World.h>
 #include "Options.h"
 #include "Utils.h"
-#include "World.h"
 
 namespace
 {
