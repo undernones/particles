@@ -80,7 +80,7 @@ set (CORE_SRC
     Utils.cpp
 )
 add_executable(headless main.cpp ${CORE_SRC})
-target_link_libraries(headless physics geom simulator)
+target_link_libraries(headless physics geom simulator ${QT_LIBRARIES})
 
 add_subdirectory(gui)
 

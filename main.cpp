@@ -1,35 +1,36 @@
+#include <QtGui/QApplication>
 #include <iostream>
 #include <stdexcept>
+#include <physics/SoftBody.h>
+#include <simulator/FrameSaver.h>
+#include <simulator/SimThread.h>
 #include <simulator/World.h>
 #include "Options.h"
 #include "Utils.h"
 
-namespace
-{
-const int SUCCESS = 0;
-const int ERROR = 1;
-}
-
 int
 main(int argc, char* argv[])
 {
-    try {
-        Options::init(argc, argv);
-        World::init();
+    QApplication a(argc, argv);
+    Options::init(argc, argv);
+    World::init();
 
-        uint32_t totalSteps = Options::duration() / Options::dt();
-        std::cout << "Duration:    " << Options::duration() << "s" << std::endl
-                  << "Timestep:    " << Options::dt() << "s" << std::endl
-                  << "Total steps: " << totalSteps << std::endl
-                  ;
+    SimThread& thread(SimThread::instance());
 
-        for (uint32_t i = 0; i < totalSteps; ++i) {
-            World::step(Options::dt());
-        }
-    } catch (std::exception &e) {
-        Utils::error(std::string("Exception: ") + e.what());
-        return ERROR;
+    const SoftBody* body = World::bodies()[0];
+    FrameSaver saver(*body, Options::framesDir(), Options::dt(), Options::fps());
+    if (body->mesh() != nullptr) {
+        saver.connect(&thread, SIGNAL(stepped()), SLOT(stepped()));
     }
 
-    return SUCCESS;
+    uint32_t totalSteps = Options::duration() / Options::dt();
+    std::cout << "Duration:    " << Options::duration() << "s" << std::endl
+              << "Timestep:    " << Options::dt() << "s" << std::endl
+              << "Total steps: " << totalSteps << std::endl
+              ;
+
+    thread.init(Options::duration(), Options::dt());
+    thread.start(QThread::NormalPriority);
+
+    return a.exec();
 }

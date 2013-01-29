@@ -21,6 +21,9 @@ private:
     double mSpf;
     uint32_t mFrame;
 
+signals:
+    void savedFrame(uint32_t which);
+
 public slots:
     void stepped();
 };

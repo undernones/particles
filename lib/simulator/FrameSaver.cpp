@@ -24,6 +24,7 @@ FrameSaver::stepped()
     if (mElapsed > mSpf) {
         mBody.mesh()->saveObj(Mesh::makeObjName(mFramesDir, mFrame));
         mElapsed = 0;
+        emit savedFrame(mFrame);
         mFrame++;
     }
 
