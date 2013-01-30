@@ -1,4 +1,4 @@
-#include <QtGui/QApplication>
+#include <QtCore/QtCore>
 #include <iostream>
 #include <stdexcept>
 #include <physics/SoftBody.h>
@@ -11,7 +11,7 @@
 int
 main(int argc, char* argv[])
 {
-    QApplication a(argc, argv);
+    QCoreApplication a(argc, argv);
     Options::init(argc, argv);
     World::init();
 
@@ -28,6 +28,8 @@ main(int argc, char* argv[])
               << "Timestep:    " << Options::dt() << "s" << std::endl
               << "Total steps: " << totalSteps << std::endl
               ;
+
+    a.connect(&thread, SIGNAL(finished()), SLOT(quit()));
 
     thread.init(Options::duration(), Options::dt());
     thread.start(QThread::NormalPriority);

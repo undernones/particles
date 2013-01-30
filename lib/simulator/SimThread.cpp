@@ -90,5 +90,7 @@ SimThread::step()
     if (i++ < totalSteps) {
         World::step(mDt);
         emit stepped();
+    } else {
+        mQuitFlag = true;
     }
 }
