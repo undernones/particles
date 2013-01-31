@@ -99,11 +99,6 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
     updateNeighborhoods();
     updateRadii();
     updateRestQuantities();
-
-    mPointIndices.resize(size);
-    for (uint32_t i = 0; i < size; ++i) {
-        mPointIndices[i] = i;
-    }
 }
 
 SoftBody::~SoftBody()
@@ -139,12 +134,6 @@ SoftBody::setMesh(Mesh* mesh)
         }
         hood.computeSum();
     }
-
-    uint32_t size = mesh->verts().size();
-    mMeshIndices.resize(size);
-    for (uint32_t i = 0; i < size; ++i) {
-        mMeshIndices[i] = i;
-    }
 }
 
 void
@@ -153,7 +142,11 @@ SoftBody::updateMesh()
     if (mMesh == nullptr) return;
 
 #ifdef PARALLEL
-    QtConcurrent::blockingMap(mMeshIndices, MeshProcessor(*this));
+    tbb::parallel_for(
+        tbb::blocked_range<uint32_t>(0, mMesh->verts().size()),
+        MeshProcessor(*this),
+        tbb::simple_partitioner()
+    );
 #else
     updateMesh(0, mMesh->verts().size());
 #endif
@@ -202,7 +195,11 @@ void
 SoftBody::computeInternalForces()
 {
 #ifdef PARALLEL
-    QtConcurrent::blockingMap(mPointIndices, ForceProcessor(*this));
+    tbb::parallel_for(
+        tbb::blocked_range<uint32_t>(0, size()),
+        ForceProcessor(*this),
+        tbb::simple_partitioner()
+    );
 #else
     clearNeighborForces(0, size());
     computeFs(0, size());

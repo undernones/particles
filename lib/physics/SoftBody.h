@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <Eigen>
+#include <tbb/tbb.h>
 #include <geom/BBox.h>
 #include <geom/Neighborhood.h>
 #include "Material.h"
@@ -55,13 +56,16 @@ private:
             : mBody(body)
         {}
 
-        void operator ()(uint32_t i)
+        void operator ()(const tbb::blocked_range<uint32_t> r) const
         {
-            mBody.clearNeighborForces(i, i + 1);
-            mBody.computeFs(i, i + 1);
-            mBody.computeStrains(i, i + 1);
-            mBody.computeStresses(i, i + 1);
-            mBody.computeForces(i, i + 1);
+            uint32_t lo = r.begin();
+            uint32_t hi = r.end();
+
+            mBody.clearNeighborForces(lo, hi);
+            mBody.computeFs(lo, hi);
+            mBody.computeStrains(lo, hi);
+            mBody.computeStresses(lo, hi);
+            mBody.computeForces(lo, hi);
         }
 
     private:
@@ -76,9 +80,9 @@ private:
             : mBody(body)
         {}
 
-        void operator ()(uint32_t i)
+        void operator ()(const tbb::blocked_range<uint32_t> r) const
         {
-            mBody.updateMesh(i, i + 1);
+            mBody.updateMesh(r.begin(), r.end());
         }
 
     private:
@@ -92,9 +96,6 @@ private:
     Mesh* mMesh;
     VectorList mRestMesh;
     std::vector<Neighborhood> mMeshNeighborhoods;
-
-    std::vector<uint32_t> mPointIndices;
-    std::vector<uint32_t> mMeshIndices;
 
     SoftBody(const SoftBody&);
     SoftBody& operator =(const SoftBody&);

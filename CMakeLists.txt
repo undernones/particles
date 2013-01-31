@@ -65,7 +65,7 @@ set (PHYSICS_SRC
     lib/physics/SoftBody.cpp
 )
 add_library(physics ${PHYSICS_SRC})
-target_link_libraries(physics geom)
+target_link_libraries(physics geom tbb)
 
 set (SIM_SRC
     lib/simulator/FrameSaver.cpp
