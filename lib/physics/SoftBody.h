@@ -48,19 +48,65 @@ public:
     void updateMesh();
 
 private:
+    class ForceProcessor
+    {
+    public:
+        ForceProcessor(SoftBody& body)
+            : mBody(body)
+        {}
+
+        void operator ()(uint32_t i)
+        {
+            mBody.clearNeighborForces(i, i + 1);
+            mBody.computeFs(i, i + 1);
+            mBody.computeStrains(i, i + 1);
+            mBody.computeStresses(i, i + 1);
+            mBody.computeForces(i, i + 1);
+        }
+
+    private:
+        SoftBody& mBody;
+    };
+    // ----------------------------------------------------------------------
+
+    class MeshProcessor
+    {
+    public:
+        MeshProcessor(SoftBody& body)
+            : mBody(body)
+        {}
+
+        void operator ()(uint32_t i)
+        {
+            mBody.updateMesh(i, i + 1);
+        }
+
+    private:
+        SoftBody& mBody;
+    };
+    // ----------------------------------------------------------------------
+
     BBox mBBox;
     Material mMaterial;
+
     Mesh* mMesh;
     VectorList mRestMesh;
     std::vector<Neighborhood> mMeshNeighborhoods;
 
+    std::vector<uint32_t> mPointIndices;
+    std::vector<uint32_t> mMeshIndices;
+
     SoftBody(const SoftBody&);
     SoftBody& operator =(const SoftBody&);
 
-    void computeFs();
-    void computeStrains();
-    void computeStresses();
-    void computeForces();
+    void clearNeighborForces(uint32_t lo, uint32_t hi);
+    void computeFs(uint32_t lo, uint32_t hi);
+    void computeStrains(uint32_t lo, uint32_t hi);
+    void computeStresses(uint32_t lo, uint32_t hi);
+    void computeForces(uint32_t lo, uint32_t hi);
+    void accumulateForces(); // Not parallelizable
+
+    void updateMesh(uint32_t lo, uint32_t hi);
 
     double avgRadius() const;
 };

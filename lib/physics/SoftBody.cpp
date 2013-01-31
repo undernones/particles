@@ -1,9 +1,12 @@
 #include "SoftBody.h"
 #include <fstream>
+#include <QtCore>
 #include <geom/KdTree.h>
 #include <geom/Mesh.h>
 #include "kernels.h"
 #include "../Utils.h" // TODO: dependencies!
+
+#define PARALLEL
 
 using Eigen::Vector3d;
 using Eigen::Matrix3d;
@@ -96,6 +99,11 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
     updateNeighborhoods();
     updateRadii();
     updateRestQuantities();
+
+    mPointIndices.resize(size);
+    for (uint32_t i = 0; i < size; ++i) {
+        mPointIndices[i] = i;
+    }
 }
 
 SoftBody::~SoftBody()
@@ -131,6 +139,12 @@ SoftBody::setMesh(Mesh* mesh)
         }
         hood.computeSum();
     }
+
+    uint32_t size = mesh->verts().size();
+    mMeshIndices.resize(size);
+    for (uint32_t i = 0; i < size; ++i) {
+        mMeshIndices[i] = i;
+    }
 }
 
 void
@@ -138,9 +152,24 @@ SoftBody::updateMesh()
 {
     if (mMesh == nullptr) return;
 
-    auto rest_it = mRestMesh.begin();
-    auto hood_it = mMeshNeighborhoods.begin();
-    for (auto& v : mMesh->verts()) {
+#ifdef PARALLEL
+    QtConcurrent::blockingMap(mMeshIndices, MeshProcessor(*this));
+#else
+    updateMesh(0, mMesh->verts().size());
+#endif
+    //mMesh->updateNormals();
+}
+
+void
+SoftBody::updateMesh(uint32_t lo, uint32_t hi)
+{
+    auto rest_it = mRestMesh.begin() + lo;
+    auto hood_it = mMeshNeighborhoods.begin() + lo;
+    auto vert_it = mMesh->verts().begin() + lo;
+
+    auto end = mMesh->verts().begin() + hi;
+
+    for (; vert_it != end; ++vert_it, ++rest_it, ++hood_it) {
         // compute normalized weighted average of neighbors' displacements.
         Vector3d displacement(0, 0, 0);
         for (auto& n : *hood_it) {
@@ -149,12 +178,8 @@ SoftBody::updateMesh()
         displacement /= hood_it->sum();
 
         // set v to rest_it + avg displacement.
-        v = *rest_it + displacement;
-
-        ++rest_it;
-        ++hood_it;
+        *vert_it = *rest_it + displacement;
     }
-    mMesh->updateNormals();
 }
 
 double
@@ -176,10 +201,16 @@ SoftBody::clearForces()
 void
 SoftBody::computeInternalForces()
 {
-    computeFs();
-    computeStrains();
-    computeStresses();
-    computeForces();
+#ifdef PARALLEL
+    QtConcurrent::blockingMap(mPointIndices, ForceProcessor(*this));
+#else
+    clearNeighborForces(0, size());
+    computeFs(0, size());
+    computeStrains(0, size());
+    computeStresses(0, size());
+    computeForces(0, size());
+#endif
+    accumulateForces();
 }
 
 void
@@ -279,14 +310,30 @@ SoftBody::updateRestQuantities()
 }
 
 void
-SoftBody::computeFs()
+SoftBody::clearNeighborForces(uint32_t lo, uint32_t hi)
 {
+    auto h_it = neighborhoods.begin() + lo;
+    auto end = neighborhoods.begin() + hi;
+
+    for (; h_it != end; ++h_it) {
+        for (auto& n : *h_it) {
+            n.f.setZero();
+        }
+    }
+}
+
+void
+SoftBody::computeFs(uint32_t lo, uint32_t hi)
+{
+    auto n_it = neighborhoods.begin() + lo;
+    auto f_it = defs.begin() + lo;
+    auto u_it = posWorld.begin() + lo;
+    auto b_it = bases.begin() + lo;
+
+    auto end = posWorld.begin() + hi;
+
     Matrix3d rhs;
-    auto n_it = neighborhoods.begin();
-    auto f_it = defs.begin();
-    auto u_it = posWorld.begin();
-    auto b_it = bases.begin();
-    for (; u_it != posWorld.end(); ++u_it, ++f_it, ++n_it, ++b_it) {
+    for (; u_it != end; ++u_it, ++f_it, ++n_it, ++b_it) {
         rhs.setZero();
         for (auto& n : *n_it) {
             rhs += n.w * (posWorld[n.index] - *u_it) * n.u.transpose();
@@ -296,25 +343,32 @@ SoftBody::computeFs()
 }
 
 void
-SoftBody::computeStrains()
+SoftBody::computeStrains(uint32_t lo, uint32_t hi)
 {
-    auto f_it = defs.begin();
-    for (auto& e : strains) {
+    auto f_it = defs.begin() + lo;
+    auto e_it = strains.begin() + lo;
+
+    auto end = strains.begin() + hi;
+
+    for (; e_it != end; ++e_it, ++f_it) {
         const Matrix3d& F = *f_it;
         // Linear Cauchy strain
         //e = 0.5 * (F + F.transpose()) - Matrix3d::Identity();
         // Quadratic Green strain
-        e = 0.5 * (F.transpose() * F - Matrix3d::Identity());
-        ++f_it;
+        *e_it = 0.5 * (F.transpose() * F - Matrix3d::Identity());
     }
 }
 
 void
-SoftBody::computeStresses()
+SoftBody::computeStresses(uint32_t lo, uint32_t hi)
 {
-    auto f_it = defs.begin();
-    auto e_it = strains.begin();
-    for (auto& stress : stresses) {
+    auto f_it = defs.begin() + lo;
+    auto e_it = strains.begin() + lo;
+    auto s_it = stresses.begin() + lo;
+
+    auto end = stresses.begin() + hi;
+
+    for (; s_it != end; ++s_it, ++f_it, ++e_it) {
         const Matrix3d& e = *e_it;
         const Matrix3d& F = *f_it;
 
@@ -323,29 +377,23 @@ SoftBody::computeStresses()
         diag << d, 0, 0,
                 0, d, 0,
                 0, 0, d;
-        stress = F * (2 * mMaterial.mu * e + diag); // TODO: Multiply by F?
-
-        ++f_it;
-        ++e_it;
+        *s_it = F * (2 * mMaterial.mu * e + diag); // TODO: Multiply by F?
     }
 }
 
 void
-SoftBody::computeForces()
+SoftBody::computeForces(uint32_t lo, uint32_t hi)
 {
-    for (auto& hood : neighborhoods) {
-        for (auto& n : hood) {
-            n.f.setZero();
-        }
-    }
+    auto vel_it = velocities.begin() + lo;
+    auto v_it = volumes.begin() + lo;
+    auto stress_it = stresses.begin() + lo;
+    auto basis_it = bases.begin() + lo;
+    auto n_it = neighborhoods.begin() + lo;
+    auto f_it = forces.begin() + lo;
 
-    auto vel_it = velocities.begin();
-    auto v_it = volumes.begin();
-    auto stress_it = stresses.begin();
-    auto basis_it = bases.begin();
-    auto n_it = neighborhoods.begin();
+    auto end = forces.begin() + hi;
 
-    for (auto& f : forces) {
+    for (; f_it != end; ++f_it, ++vel_it, ++v_it, ++stress_it, ++basis_it, ++n_it) {
         double volume = *v_it;
         const Matrix3d& stress = *stress_it;
         const Matrix3d& basis = *basis_it;
@@ -355,20 +403,18 @@ SoftBody::computeForces()
         for (auto& n : neighborhood) {
             Vector3d force = Fe * (n.u * n.w);
             n.f += force;
-            f -= force;
+            *f_it -= force;
 
             Vector3d viscous = volume * (velocities[n.index] - *vel_it) * n.w;
             n.f -= viscous;
-            f += viscous;
+            *f_it += viscous;
         }
-
-        ++vel_it;
-        ++v_it;
-        ++stress_it;
-        ++basis_it;
-        ++n_it;
     }
+}
 
+void
+SoftBody::accumulateForces()
+{
     for (auto& hood : neighborhoods) {
         for (auto& n : hood) {
             forces[n.index] += n.f;
