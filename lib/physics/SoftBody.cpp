@@ -144,8 +144,7 @@ SoftBody::updateMesh()
 #ifdef PARALLEL
     tbb::parallel_for(
         tbb::blocked_range<uint32_t>(0, mMesh->verts().size()),
-        MeshProcessor(*this),
-        tbb::simple_partitioner()
+        MeshProcessor(*this)
     );
 #else
     updateMesh(0, mMesh->verts().size());
@@ -197,8 +196,7 @@ SoftBody::computeInternalForces()
 #ifdef PARALLEL
     tbb::parallel_for(
         tbb::blocked_range<uint32_t>(0, size()),
-        ForceProcessor(*this),
-        tbb::simple_partitioner()
+        ForceProcessor(*this)
     );
 #else
     clearNeighborForces(0, size());
