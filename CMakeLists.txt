@@ -55,6 +55,7 @@ set (GEOM_SRC
     lib/geom/Mesh.cpp
     lib/geom/Neighbor.cpp
     lib/geom/Neighborhood.cpp
+    lib/geom/Octree.cpp
     lib/geom/Triangle.cpp
 )
 add_library(geom ${GEOM_SRC})

@@ -1,4 +1,5 @@
 #include "SoftBody.h"
+#include <iostream>
 #include <fstream>
 #include <QtCore>
 #include <geom/KdTree.h>
@@ -8,8 +9,7 @@
 
 #define PARALLEL
 
-using Eigen::Vector3d;
-using Eigen::Matrix3d;
+using namespace Eigen;
 
 namespace
 {
@@ -334,6 +334,10 @@ SoftBody::computeFs(uint32_t lo, uint32_t hi)
             rhs += n.w * (posWorld[n.index] - *u_it) * n.u.transpose();
         }
         *f_it = rhs * *b_it;
+
+        //JacobiSVD<Matrix3d, NoQRPreconditioner> svd(rhs * *b_it, ComputeThinU | ComputeThinV);
+        //DiagonalMatrix3d singularValues(svd.singularValues());
+        //*f_it = svd.matrixU() * singularValues * svd.matrixV().transpose();
     }
 }
 
