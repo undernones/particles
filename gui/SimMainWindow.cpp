@@ -32,7 +32,7 @@ SimMainWindow::setSoftBody(const SoftBody* body)
     const Eigen::Matrix3d* matrix = NULL;
 
     if (body != NULL) {
-        matrix = &body->strains[0];
+        matrix = &body->bases[0];
     }
 
     ui->glWidget->setBody(body);

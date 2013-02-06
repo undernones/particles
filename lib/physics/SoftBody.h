@@ -14,7 +14,8 @@ class SoftBody
 public:
     typedef std::vector<Eigen::Vector3d> VectorList;
     typedef std::vector<Eigen::Matrix3d> MatrixList;
-    typedef std::vector<Eigen::JacobiSVD<Eigen::Matrix3d, Eigen::NoQRPreconditioner>> SvdList;
+    typedef Eigen::JacobiSVD<Eigen::Matrix3d, Eigen::NoQRPreconditioner> Svd;
+    typedef std::vector<Svd> SvdList;
     typedef Eigen::DiagonalMatrix<double, 3> DiagonalMatrix3d;
 
     MatrixList bases;
@@ -27,10 +28,9 @@ public:
     std::vector<double> volumes;
     std::vector<double> radii;
     std::vector<Neighborhood> neighborhoods;
-    MatrixList defs;
-    MatrixList strains;
+    SvdList defs;
+    VectorList strains;
     MatrixList stresses;
-    SvdList svds;
 
     SoftBody(const std::string& positionsFile, const Material& material);
     ~SoftBody();

@@ -88,7 +88,6 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
     neighborhoods.resize(size);
 
     defs.resize(size);
-    identity(defs);
 
     strains.resize(size);
     zero(strains);
@@ -333,28 +332,22 @@ SoftBody::computeFs(uint32_t lo, uint32_t hi)
         for (auto& n : *n_it) {
             rhs += n.w * (posWorld[n.index] - *u_it) * n.u.transpose();
         }
-        *f_it = rhs * *b_it;
-
-        //JacobiSVD<Matrix3d, NoQRPreconditioner> svd(rhs * *b_it, ComputeThinU | ComputeThinV);
-        //DiagonalMatrix3d singularValues(svd.singularValues());
-        //*f_it = svd.matrixU() * singularValues * svd.matrixV().transpose();
+        *f_it = Svd(rhs * *b_it, ComputeThinU | ComputeThinV);
     }
 }
 
 void
 SoftBody::computeStrains(uint32_t lo, uint32_t hi)
 {
+    static const Vector3d I(1, 1, 1);
+
     auto f_it = defs.begin() + lo;
     auto e_it = strains.begin() + lo;
 
     auto end = strains.begin() + hi;
 
     for (; e_it != end; ++e_it, ++f_it) {
-        const Matrix3d& F = *f_it;
-        // Linear Cauchy strain
-        //e = 0.5 * (F + F.transpose()) - Matrix3d::Identity();
-        // Quadratic Green strain
-        *e_it = 0.5 * (F.transpose() * F - Matrix3d::Identity());
+        *e_it = f_it->singularValues() - I;
     }
 }
 
@@ -368,15 +361,10 @@ SoftBody::computeStresses(uint32_t lo, uint32_t hi)
     auto end = stresses.begin() + hi;
 
     for (; s_it != end; ++s_it, ++f_it, ++e_it) {
-        const Matrix3d& e = *e_it;
-        const Matrix3d& F = *f_it;
 
-        double d = mMaterial.lambda * e.trace();
-        Matrix3d diag;
-        diag << d, 0, 0,
-                0, d, 0,
-                0, 0, d;
-        *s_it = F * (2 * mMaterial.mu * e + diag); // TODO: Multiply by F?
+        double d = mMaterial.lambda * e_it->trace();
+        Vector3d diag((2 * mMaterial.mu * *e_it) + Vector3d(d, d, d));
+        *s_it = f_it->matrixU() * DiagonalMatrix3d(diag) * f_it->matrixV().transpose();
     }
 }
 
