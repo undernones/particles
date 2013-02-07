@@ -30,7 +30,7 @@ public:
     std::vector<Neighborhood> neighborhoods;
     SvdList defs;
     VectorList strains;
-    MatrixList stresses;
+    VectorList stresses;
 
     SoftBody(const std::string& positionsFile, const Material& material);
     ~SoftBody();

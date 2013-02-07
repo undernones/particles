@@ -354,23 +354,21 @@ SoftBody::computeStrains(uint32_t lo, uint32_t hi)
 void
 SoftBody::computeStresses(uint32_t lo, uint32_t hi)
 {
-    auto f_it = defs.begin() + lo;
     auto e_it = strains.begin() + lo;
     auto s_it = stresses.begin() + lo;
 
     auto end = stresses.begin() + hi;
 
-    for (; s_it != end; ++s_it, ++f_it, ++e_it) {
-
+    for (; s_it != end; ++s_it, ++e_it) {
         double d = mMaterial.lambda * e_it->trace();
-        Vector3d diag((2 * mMaterial.mu * *e_it) + Vector3d(d, d, d));
-        *s_it = f_it->matrixU() * DiagonalMatrix3d(diag) * f_it->matrixV().transpose();
+        *s_it = (2 * mMaterial.mu * *e_it) + Vector3d(d, d, d);
     }
 }
 
 void
 SoftBody::computeForces(uint32_t lo, uint32_t hi)
 {
+    auto def_it = defs.begin() + lo;
     auto vel_it = velocities.begin() + lo;
     auto v_it = volumes.begin() + lo;
     auto stress_it = stresses.begin() + lo;
@@ -380,10 +378,12 @@ SoftBody::computeForces(uint32_t lo, uint32_t hi)
 
     auto end = forces.begin() + hi;
 
-    for (; f_it != end; ++f_it, ++vel_it, ++v_it, ++stress_it, ++basis_it, ++n_it) {
+    for (; f_it != end; ++f_it, ++def_it, ++vel_it, ++v_it, ++stress_it, ++basis_it, ++n_it) {
         double volume = *v_it;
-        const Matrix3d& stress = *stress_it;
         const Matrix3d& basis = *basis_it;
+        const Matrix3d stress = def_it->matrixU()
+                              * DiagonalMatrix3d(*stress_it)
+                              * def_it->matrixV().transpose();
         Neighborhood& neighborhood = *n_it;
 
         Matrix3d Fe = -2 * volume * stress * basis;
