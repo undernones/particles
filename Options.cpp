@@ -64,7 +64,7 @@ double Options::mu() { return OPT_mu; }
 double Options::friction() { return OPT_friction; }
 double Options::flowRate() { return OPT_flowRate; }
 double Options::yieldPoint() { return OPT_yieldPoint; }
-double Options::K() { return OPT_hardening; }
+double Options::hardening() { return OPT_hardening; }
 double Options::gravity() { return OPT_gravity; }
 
 bool Options::startPaused() { return start_paused != 0; }

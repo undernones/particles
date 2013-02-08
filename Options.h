@@ -21,7 +21,7 @@ public:
     static double friction();
     static double flowRate();
     static double yieldPoint();
-    static double K();
+    static double hardening();
     static double gravity();
 
     static bool startPaused();

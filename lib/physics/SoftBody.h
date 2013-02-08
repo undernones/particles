@@ -29,6 +29,10 @@ public:
     std::vector<double> radii;
     std::vector<Neighborhood> neighborhoods;
     SvdList defs;
+    VectorList elasticDefs;
+    VectorList plasticDefs;
+    std::vector<double> gammas;
+    std::vector<double> alphas;
     VectorList strains;
     VectorList stresses;
 
@@ -66,6 +70,8 @@ private:
 
             mBody.clearNeighborForces(lo, hi);
             mBody.computeFs(lo, hi);
+            mBody.computeGammas(lo, hi);
+            mBody.decomposeFs(lo, hi);
             mBody.computeStrains(lo, hi);
             mBody.computeStresses(lo, hi);
             mBody.computeForces(lo, hi);
@@ -105,6 +111,8 @@ private:
 
     void clearNeighborForces(uint32_t lo, uint32_t hi);
     void computeFs(uint32_t lo, uint32_t hi);
+    void computeGammas(uint32_t lo, uint32_t hi);
+    void decomposeFs(uint32_t lo, uint32_t hi);
     void computeStrains(uint32_t lo, uint32_t hi);
     void computeStresses(uint32_t lo, uint32_t hi);
     void computeForces(uint32_t lo, uint32_t hi);

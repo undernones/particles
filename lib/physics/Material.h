@@ -6,6 +6,9 @@ struct Material
     double mu;
     double lambda;
     double density;
+    double hardening;
+    double flowRate;
+    double yieldPoint;
 };
 
 #endif // PHYSICS_MATERIAL_H

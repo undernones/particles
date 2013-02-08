@@ -14,6 +14,8 @@ using namespace Eigen;
 namespace
 {
 
+const double EPSILON = 1e-6;
+
 bool
 load(const std::string& filename, std::vector<Vector3d>& positions)
 {
@@ -37,6 +39,12 @@ void
 zero(std::vector<T>& list)
 {
     for_each (list.begin(), list.end(), [](T& x) { x.setZero(); });
+}
+
+void
+zero(std::vector<double>& list)
+{
+    for_each (list.begin(), list.end(), [](double& x) { x = 0; });
 }
 
 void
@@ -88,6 +96,11 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
     neighborhoods.resize(size);
 
     defs.resize(size);
+    elasticDefs.resize(size);
+    plasticDefs.resize(size);
+    gammas.resize(size);
+    alphas.resize(size);
+    zero(alphas);
 
     strains.resize(size);
     zero(strains);
@@ -200,6 +213,8 @@ SoftBody::computeInternalForces()
 #else
     clearNeighborForces(0, size());
     computeFs(0, size());
+    computeGammas(0, size());
+    decomposeFs(0, size());
     computeStrains(0, size());
     computeStresses(0, size());
     computeForces(0, size());
@@ -334,6 +349,36 @@ SoftBody::computeFs(uint32_t lo, uint32_t hi)
         }
         *f_it = Svd(rhs * *b_it, ComputeThinU | ComputeThinV);
     }
+}
+
+void
+SoftBody::computeGammas(uint32_t lo, uint32_t hi)
+{
+    auto s_it = stresses.begin() + lo;
+    auto g_it = gammas.begin() + lo;
+    auto a_it = alphas.begin() + lo;
+
+    auto end = stresses.begin() + hi;
+
+    for (; s_it != end; ++s_it, ++g_it, ++a_it) {
+        auto stressNorm = s_it->norm();
+        auto& flowRate = mMaterial.flowRate;
+        auto& yieldPoint = mMaterial.yieldPoint;
+
+        double threshold = 0;
+        double k_alpha = mMaterial.hardening * *a_it;
+        if (stressNorm > EPSILON) {
+            threshold = flowRate
+                      * (stressNorm - std::max(yieldPoint + k_alpha, 0.0))
+                      / stressNorm;
+        }
+        *g_it = Utils::clamp(threshold, 0, 1);
+    }
+}
+
+void
+SoftBody::decomposeFs(uint32_t lo, uint32_t hi)
+{
 }
 
 void

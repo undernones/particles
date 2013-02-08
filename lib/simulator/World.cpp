@@ -68,6 +68,9 @@ World::init()
         Options::mu(),
         Options::lambda(),
         Options::density(),
+        Options::hardening(),
+        Options::flowRate(),
+        Options::yieldPoint(),
     };
     SoftBody* body = new SoftBody(Options::particleFile(), material);
 
