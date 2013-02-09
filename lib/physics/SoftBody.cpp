@@ -222,13 +222,13 @@ SoftBody::updateState(double dt)
 #ifdef PARALLEL
     tbb::parallel_for(
         tbb::blocked_range<uint32_t>(0, size()),
-        ForceProcessor(*this)
+        ForceProcessor(*this, dt)
     );
 #else
     updateRestQuantities(0, size());
     clearForces(0, size());
     computeFs(0, size());
-    computeGammas(0, size());
+    computeGammas(0, size(), dt);
     decomposeFs(0, size());
     computeStrains(0, size());
     computeStresses(0, size());
@@ -236,6 +236,7 @@ SoftBody::updateState(double dt)
     computeForces(0, size());
 #endif
     gatherForces();
+    embed();
 }
 
 void
@@ -353,7 +354,7 @@ SoftBody::computeFs(uint32_t lo, uint32_t hi)
 // Uses the previous timestep's stress values to compute gamma.
 //
 void
-SoftBody::computeGammas(uint32_t lo, uint32_t hi)
+SoftBody::computeGammas(uint32_t lo, uint32_t hi, double dt)
 {
     auto s_it = stresses.begin() + lo;
     auto g_it = gammas.begin() + lo;
@@ -372,7 +373,7 @@ SoftBody::computeGammas(uint32_t lo, uint32_t hi)
             gamma = flowRate * (stressNorm - yieldPoint - k_alpha) / stressNorm;
         }
         *g_it = Utils::clamp(gamma, 0, 1);
-        *a_it += stressNorm;
+        *a_it += stressNorm * dt;
     }
 }
 
@@ -494,5 +495,46 @@ SoftBody::gatherForces()
 void
 SoftBody::embed()
 {
+//    // Each row has n elements in it 
+//    CompressedRowBlockMatrix P(particles.size());
+//    std::vector<SlVector3> rhs(0);
+//
+//    // First guess at new positions is the old positions
+//    std::vector<SlVector3> newPos(particles.size());
+//
+//    size_t row = 0;
+//    BOOST_FOREACH (const Particle &p, particles) {
+//        newPos[p.index] = p.materialPos;
+//
+//        BOOST_FOREACH (const Neighbor &n, p.neighbors){
+//            /*std::vector<double> rowData(2);
+//            std::vector<size_t> rowIndices(2,0);
+//            rowIndices[0] = n.index;
+//            rowIndices[1] = p.index;
+//            rowData[0] = w_ij;
+//            rowData[1] = -w_ij;
+//            P.addRow(rowIndices, rowData);*/
+//	    rhs.push_back(n.u * n.w_ij);
+//	    ++row;
+//        }
+//    }
+//
+//    // Fix particle 0's position to remove some degrees of freedom
+//    /*std::vector<double> lastRowData(1,1);
+//    std::vector<size_t> lastRowIndex(1,0);
+//    P.addRow(lastRowIndex, lastRowData);*/
+//    rhs.push_back(particles[0].materialPos);
+//
+//
+//    std::vector<SlVector3> b(particles.size(), SlVector3(0.0));
+//    P.mulVectorTransposeImplicit(rhs, b);
+//
+//    //CompressedRowBlockMatrix PTP = P.formATA();
+//    //PTP.pcgSolve(b, newPos);
+//    //P.pcgSolve(b, newPos);
+//    P.cgSolve(b, newPos, rhs.size());  //not using the preconditioner anyway
+//    for (size_t i = 0; i < particles.size(); ++i) {
+//        particles[i].materialPos = newPos[i];
+//    }
 }
 

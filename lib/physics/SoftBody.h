@@ -57,8 +57,9 @@ private:
     class ForceProcessor
     {
     public:
-        ForceProcessor(SoftBody& body)
+        ForceProcessor(SoftBody& body, double dt)
             : mBody(body)
+            , mDt(dt)
         {}
 
         void operator ()(const tbb::blocked_range<uint32_t> r) const
@@ -69,7 +70,7 @@ private:
             mBody.updateRestQuantities(lo, hi);
             mBody.clearForces(lo, hi);
             mBody.computeFs(lo, hi);
-            mBody.computeGammas(lo, hi);
+            mBody.computeGammas(lo, hi, mDt);
             mBody.decomposeFs(lo, hi);
             mBody.computeStrains(lo, hi);
             mBody.computeStresses(lo, hi);
@@ -79,6 +80,7 @@ private:
 
     private:
         SoftBody& mBody;
+        double mDt;
     };
     // ----------------------------------------------------------------------
 
@@ -112,7 +114,7 @@ private:
     void clearForces(uint32_t lo, uint32_t hi);
     void updateRestQuantities(uint32_t lo, uint32_t hi);
     void computeFs(uint32_t lo, uint32_t hi);
-    void computeGammas(uint32_t lo, uint32_t hi);
+    void computeGammas(uint32_t lo, uint32_t hi, double dt);
     void decomposeFs(uint32_t lo, uint32_t hi);
     void computeStrains(uint32_t lo, uint32_t hi);
     void computeStresses(uint32_t lo, uint32_t hi);
