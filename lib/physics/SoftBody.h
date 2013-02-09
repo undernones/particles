@@ -41,8 +41,7 @@ public:
 
     inline const Material& material() const { return mMaterial; }
 
-    void clearForces();
-    void computeInternalForces();
+    void updateState(double dt);
     void updateNeighborhoods();
     void updateRadii();
 
@@ -68,7 +67,7 @@ private:
             uint32_t hi = r.end();
 
             mBody.updateRestQuantities(lo, hi);
-            mBody.clearNeighborForces(lo, hi);
+            mBody.clearForces(lo, hi);
             mBody.computeFs(lo, hi);
             mBody.computeGammas(lo, hi);
             mBody.decomposeFs(lo, hi);
@@ -110,8 +109,8 @@ private:
     SoftBody(const SoftBody&);
     SoftBody& operator =(const SoftBody&);
 
+    void clearForces(uint32_t lo, uint32_t hi);
     void updateRestQuantities(uint32_t lo, uint32_t hi);
-    void clearNeighborForces(uint32_t lo, uint32_t hi);
     void computeFs(uint32_t lo, uint32_t hi);
     void computeGammas(uint32_t lo, uint32_t hi);
     void decomposeFs(uint32_t lo, uint32_t hi);
@@ -119,8 +118,9 @@ private:
     void computeStresses(uint32_t lo, uint32_t hi);
     void computeForces(uint32_t lo, uint32_t hi);
     void applyPlasticDef(uint32_t lo, uint32_t hi);
-    void gatherForces(); // Not parallelizable
+    void gatherForces();
 
+    void embed();
     void updateMesh(uint32_t lo, uint32_t hi);
 
     double avgRadius() const;

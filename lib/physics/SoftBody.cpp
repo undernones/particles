@@ -196,13 +196,28 @@ SoftBody::avgRadius() const
 }
 
 void
-SoftBody::clearForces()
+SoftBody::clearForces(uint32_t lo, uint32_t hi)
 {
-    zero(forces);
+    // Clear the forces on each particle.
+    for_each (
+        forces.begin() + lo,
+        forces.begin() + hi,
+        [](Vector3d& f) { f.setZero(); }
+    );
+
+    // And clear the temporary forces stored in neighborhoods.
+    auto h_it = neighborhoods.begin() + lo;
+    auto end = neighborhoods.begin() + hi;
+
+    for (; h_it != end; ++h_it) {
+        for (auto& n : *h_it) {
+            n.f.setZero();
+        }
+    }
 }
 
 void
-SoftBody::computeInternalForces()
+SoftBody::updateState(double dt)
 {
 #ifdef PARALLEL
     tbb::parallel_for(
@@ -211,7 +226,7 @@ SoftBody::computeInternalForces()
     );
 #else
     updateRestQuantities(0, size());
-    clearNeighborForces(0, size());
+    clearForces(0, size());
     computeFs(0, size());
     computeGammas(0, size());
     decomposeFs(0, size());
@@ -311,19 +326,6 @@ SoftBody::updateRestQuantities(uint32_t lo, uint32_t hi)
         *v_it = sqrt(b_it->determinant() / Utils::cube(n_it->computeSum()));
         *m_it = mMaterial.density * *v_it;
         *b_it = b_it->inverse().eval();
-    }
-}
-
-void
-SoftBody::clearNeighborForces(uint32_t lo, uint32_t hi)
-{
-    auto h_it = neighborhoods.begin() + lo;
-    auto end = neighborhoods.begin() + hi;
-
-    for (; h_it != end; ++h_it) {
-        for (auto& n : *h_it) {
-            n.f.setZero();
-        }
     }
 }
 
@@ -487,5 +489,10 @@ SoftBody::gatherForces()
             forces[n.index] += n.f;
         }
     }
+}
+
+void
+SoftBody::embed()
+{
 }
 

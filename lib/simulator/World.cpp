@@ -87,8 +87,7 @@ void
 World::step(double dt)
 {
     for (auto& body : sBodies) {
-        body->clearForces();
-        body->computeInternalForces();
+        body->updateState(dt);
 
         integrateExplicit(dt, *body);
         //integrateLeapfrog(dt, *body);
