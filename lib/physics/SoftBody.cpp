@@ -110,7 +110,6 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
 
     updateNeighborhoods();
     updateRadii();
-    updateRestQuantities();
 }
 
 SoftBody::~SoftBody()
@@ -211,15 +210,17 @@ SoftBody::computeInternalForces()
         ForceProcessor(*this)
     );
 #else
+    updateRestQuantities(0, size());
     clearNeighborForces(0, size());
     computeFs(0, size());
     computeGammas(0, size());
     decomposeFs(0, size());
     computeStrains(0, size());
     computeStresses(0, size());
+    applyPlasticDef(0, size());
     computeForces(0, size());
 #endif
-    accumulateForces();
+    gatherForces();
 }
 
 void
@@ -287,34 +288,29 @@ SoftBody::updateRadii()
 }
 
 void
-SoftBody::updateRestQuantities()
+SoftBody::updateRestQuantities(uint32_t lo, uint32_t hi)
 {
-    auto x_it = posWorld.begin();
-    auto u_it = posRest.begin();
-    auto n_it = neighborhoods.begin();
-    auto r_it = radii.begin();
-    auto v_it = volumes.begin();
-    auto m_it = masses.begin();
+    auto x_it = posWorld.begin() + lo;
+    auto u_it = posRest.begin() + lo;
+    auto n_it = neighborhoods.begin() + lo;
+    auto r_it = radii.begin() + lo;
+    auto v_it = volumes.begin() + lo;
+    auto m_it = masses.begin() + lo;
+    auto b_it = bases.begin() + lo;
 
-    for (auto& basis : bases) {
+    auto end = bases.begin() + hi;
 
-        basis.setZero();
+    for (; b_it != end; ++x_it, ++u_it, ++n_it, ++r_it, ++v_it, ++m_it, ++b_it) {
+        b_it->setZero();
         for (auto& n : *n_it) {
             double distance = (*u_it - posRest[n.index]).norm();
             n.w = Kernels::standardkernel(*r_it, distance);
             n.u = posRest[n.index] - *u_it;
-            basis += n.u * n.u.transpose() * n.w;
+            *b_it += n.u * n.u.transpose() * n.w;
         }
-        *v_it = sqrt(basis.determinant() / Utils::cube(n_it->computeSum()));
+        *v_it = sqrt(b_it->determinant() / Utils::cube(n_it->computeSum()));
         *m_it = mMaterial.density * *v_it;
-        basis = basis.inverse().eval();
-
-        ++x_it;
-        ++u_it;
-        ++n_it;
-        ++r_it;
-        ++v_it;
-        ++m_it;
+        *b_it = b_it->inverse().eval();
     }
 }
 
@@ -351,6 +347,9 @@ SoftBody::computeFs(uint32_t lo, uint32_t hi)
     }
 }
 
+//
+// Uses the previous timestep's stress values to compute gamma.
+//
 void
 SoftBody::computeGammas(uint32_t lo, uint32_t hi)
 {
@@ -365,20 +364,37 @@ SoftBody::computeGammas(uint32_t lo, uint32_t hi)
         auto& flowRate = mMaterial.flowRate;
         auto& yieldPoint = mMaterial.yieldPoint;
 
-        double threshold = 0;
-        double k_alpha = mMaterial.hardening * *a_it;
+        double gamma = 0;
         if (stressNorm > EPSILON) {
-            threshold = flowRate
-                      * (stressNorm - std::max(yieldPoint + k_alpha, 0.0))
-                      / stressNorm;
+            double k_alpha = mMaterial.hardening * *a_it;
+            gamma = flowRate * (stressNorm - yieldPoint - k_alpha) / stressNorm;
         }
-        *g_it = Utils::clamp(threshold, 0, 1);
+        *g_it = Utils::clamp(gamma, 0, 1);
+        *a_it += stressNorm;
     }
 }
 
+//
+// Decomposes the deformation gradient into elastic and plastic portions.
+// This method assumes that the gamma values have previously been computed.
+//
 void
 SoftBody::decomposeFs(uint32_t lo, uint32_t hi)
 {
+    auto f_it = defs.begin() + lo;
+    auto p_it = plasticDefs.begin() + lo;
+    auto e_it = elasticDefs.begin() + lo;
+    auto g_it = gammas.begin() + lo;
+
+    auto end = defs.begin() + hi;
+
+    for (; f_it != end; ++f_it, ++p_it, ++e_it, ++g_it) {
+        double det = f_it->singularValues().prod();
+        Vector3d fHatStar = f_it->singularValues() / std::fabs(std::cbrt(det));
+
+        *p_it = fHatStar.array().pow(*g_it);
+        *e_it = f_it->singularValues().array() / p_it->array();
+    }
 }
 
 void
@@ -386,13 +402,13 @@ SoftBody::computeStrains(uint32_t lo, uint32_t hi)
 {
     static const Vector3d I(1, 1, 1);
 
-    auto f_it = defs.begin() + lo;
+    auto f_it = elasticDefs.begin() + lo;
     auto e_it = strains.begin() + lo;
 
     auto end = strains.begin() + hi;
 
     for (; e_it != end; ++e_it, ++f_it) {
-        *e_it = f_it->singularValues() - I;
+        *e_it = *f_it - I;
     }
 }
 
@@ -445,7 +461,26 @@ SoftBody::computeForces(uint32_t lo, uint32_t hi)
 }
 
 void
-SoftBody::accumulateForces()
+SoftBody::applyPlasticDef(uint32_t lo, uint32_t hi)
+{
+    auto f_it = defs.begin() + lo;
+    auto p_it = plasticDefs.begin() + lo;
+    auto n_it = neighborhoods.begin() + lo;
+
+    auto end = neighborhoods.begin() + hi;
+
+    for (; n_it != end; ++f_it, ++p_it, ++n_it) {
+        for (auto& n : *n_it) {
+            Matrix3d F = f_it->matrixV()
+                       * DiagonalMatrix3d(*p_it)
+                       * f_it->matrixV().transpose();
+            n.u = F * n.u;
+        }
+    }
+}
+
+void
+SoftBody::gatherForces()
 {
     for (auto& hood : neighborhoods) {
         for (auto& n : hood) {

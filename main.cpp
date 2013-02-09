@@ -27,6 +27,12 @@ main(int argc, char* argv[])
     std::cout << "Duration:    " << Options::duration() << "s" << std::endl
               << "Timestep:    " << Options::dt() << "s" << std::endl
               << "Total steps: " << totalSteps << std::endl
+              << std::endl
+              << "mu:          " << Options::mu() << std::endl
+              << "lambda:      " << Options::lambda() << std::endl
+              << "flow rate:   " << Options::flowRate() << std::endl
+              << "yield point: " << Options::yieldPoint() << std::endl
+              << "hardening:   " << Options::hardening() << std::endl
               ;
 
     a.connect(&thread, SIGNAL(finished()), SLOT(quit()));

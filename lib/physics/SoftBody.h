@@ -45,7 +45,6 @@ public:
     void computeInternalForces();
     void updateNeighborhoods();
     void updateRadii();
-    void updateRestQuantities();
 
     inline size_t size() const { return bases.size(); }
 
@@ -68,6 +67,7 @@ private:
             uint32_t lo = r.begin();
             uint32_t hi = r.end();
 
+            mBody.updateRestQuantities(lo, hi);
             mBody.clearNeighborForces(lo, hi);
             mBody.computeFs(lo, hi);
             mBody.computeGammas(lo, hi);
@@ -75,6 +75,7 @@ private:
             mBody.computeStrains(lo, hi);
             mBody.computeStresses(lo, hi);
             mBody.computeForces(lo, hi);
+            mBody.applyPlasticDef(lo, hi);
         }
 
     private:
@@ -109,6 +110,7 @@ private:
     SoftBody(const SoftBody&);
     SoftBody& operator =(const SoftBody&);
 
+    void updateRestQuantities(uint32_t lo, uint32_t hi);
     void clearNeighborForces(uint32_t lo, uint32_t hi);
     void computeFs(uint32_t lo, uint32_t hi);
     void computeGammas(uint32_t lo, uint32_t hi);
@@ -116,7 +118,8 @@ private:
     void computeStrains(uint32_t lo, uint32_t hi);
     void computeStresses(uint32_t lo, uint32_t hi);
     void computeForces(uint32_t lo, uint32_t hi);
-    void accumulateForces(); // Not parallelizable
+    void applyPlasticDef(uint32_t lo, uint32_t hi);
+    void gatherForces(); // Not parallelizable
 
     void updateMesh(uint32_t lo, uint32_t hi);
 
