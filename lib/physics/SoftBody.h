@@ -123,6 +123,12 @@ private:
     void gatherForces();
 
     void embed();
+    void applyMatrix(const VectorList& x, VectorList& result);
+    VectorList applyMatrix(const VectorList& x);
+    void applyMatrixTranspose(const VectorList& x, VectorList& result);
+    VectorList applyMatrixTranspose(const VectorList& x);
+    void cgSolve(VectorList& x, const VectorList& b);
+
     void updateMesh(uint32_t lo, uint32_t hi);
 
     double avgRadius() const;

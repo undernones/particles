@@ -38,13 +38,21 @@ template <typename T>
 void
 zero(std::vector<T>& list)
 {
+#ifdef PARALLEL
+    QtConcurrent::blockingMap(list, [](T& x) { x.setZero(); });
+#else
     for_each (list.begin(), list.end(), [](T& x) { x.setZero(); });
+#endif
 }
 
 void
 zero(std::vector<double>& list)
 {
+#ifdef PARALLEL
+    QtConcurrent::blockingMap(list, [](double& x) { x = 0; });
+#else
     for_each (list.begin(), list.end(), [](double& x) { x = 0; });
+#endif
 }
 
 void
@@ -236,6 +244,9 @@ SoftBody::updateState(double dt)
     computeForces(0, size());
 #endif
     gatherForces();
+
+    // TODO: We only need to embed if some neighborhood had some plastic
+    // deformation of anything other than Identity.
     embed();
 }
 
@@ -346,7 +357,7 @@ SoftBody::computeFs(uint32_t lo, uint32_t hi)
         for (auto& n : *n_it) {
             rhs += n.w * (posWorld[n.index] - *u_it) * n.u.transpose();
         }
-        *f_it = Svd(rhs * *b_it, ComputeThinU | ComputeThinV);
+        *f_it = Svd(rhs * *b_it, ComputeFullU | ComputeFullV);
     }
 }
 
@@ -495,6 +506,37 @@ SoftBody::gatherForces()
 void
 SoftBody::embed()
 {
+    // Ax = b
+    // A: K^TK - K is a block matrix consisting of (-w_ij * I_i) and (w_ij * // I_j).
+    // x: Solved embedded positions.
+    // b: Plastically deformed u vectors: w_ij * u_ij.
+    //
+    // K:   96N x 3N
+    // K^T: 3N x 96N
+    // x:   3N
+    // b:   96N
+
+    uint32_t m = Neighborhood::MAX_SIZE * size();
+
+    VectorList x(posRest);
+    VectorList b(m);
+
+    // Initialize b
+    uint32_t i = 0;
+    for (auto hood : neighborhoods) {
+        uint32_t j = 0;
+        for (auto& n : hood) {
+            b[i + j] = n.w * n.u;
+            ++j;
+        }
+        for (; j < Neighborhood::MAX_SIZE; ++j) {
+            b[i + j].setZero();
+        }
+        i += Neighborhood::MAX_SIZE;
+    }
+
+    cgSolve(x, b);
+
 //    // Each row has n elements in it 
 //    CompressedRowBlockMatrix P(particles.size());
 //    std::vector<SlVector3> rhs(0);
@@ -536,5 +578,68 @@ SoftBody::embed()
 //    for (size_t i = 0; i < particles.size(); ++i) {
 //        particles[i].materialPos = newPos[i];
 //    }
+}
+
+void
+SoftBody::applyMatrix(const SoftBody::VectorList& x, SoftBody::VectorList& result)
+{
+    assert(result.size() == Neighborhood::MAX_SIZE * size());
+    assert(x.size() == size());
+}
+
+SoftBody::VectorList
+SoftBody::applyMatrix(const VectorList& x)
+{
+    assert(x.size() == size());
+
+    VectorList result(Neighborhood::MAX_SIZE * size());
+    applyMatrix(x, result);
+    return result;
+}
+
+void
+SoftBody::applyMatrixTranspose(const VectorList& x, VectorList& result)
+{
+    assert(result.size() == size());
+    assert(x.size() == Neighborhood::MAX_SIZE * size());
+}
+
+SoftBody::VectorList
+SoftBody::applyMatrixTranspose(const VectorList& x)
+{
+    assert(x.size() == Neighborhood::MAX_SIZE * size());
+
+    VectorList result(size());
+    applyMatrixTranspose(x, result);
+    return result;
+}
+
+void
+SoftBody::cgSolve(VectorList& x, const VectorList& b)
+{
+    assert(x.size() == size());
+    assert(b.size() == Neighborhood::MAX_SIZE * size());
+
+    VectorList Ax = applyMatrix(x);
+    /*
+    function [x] = conjgrad(A,b,x)
+        r=b-A*x;
+        p=r;
+        rsold=r'*r;
+     
+        for i=1:10000000
+            Ap=A*p;
+            alpha=rsold/(p'*Ap);
+            x=x+alpha*p;
+            r=r-alpha*Ap;
+            rsnew=r'*r;
+            if sqrt(rsnew)<1e-10
+                  break;
+            end
+            p=r+rsnew/rsold*p;
+            rsold=rsnew;
+        end
+    end
+    */
 }
 
