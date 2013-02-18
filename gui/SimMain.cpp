@@ -10,6 +10,8 @@
 int
 main(int argc, char* argv[])
 {
+    Eigen::initParallel();
+
     Options::init(argc, argv);
     World::init();
 

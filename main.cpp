@@ -11,6 +11,8 @@
 int
 main(int argc, char* argv[])
 {
+    Eigen::initParallel();
+
     QCoreApplication a(argc, argv);
     Options::init(argc, argv);
     World::init();
