@@ -1,5 +1,6 @@
 #include "Options.h"
 #include <getopt.h>
+#include <stdlib.h>
 
 namespace
 {

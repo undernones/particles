@@ -1,7 +1,18 @@
 #ifndef QT_GLWIDGET_H
 #define QT_GLWIDGET_H
 
+// What an ugly pain all this is! Not sure what to do about it, though.
+#ifdef __clang__
+#pragma clang diagnostic push
+#if defined(__has_warning) && __has_warning("-Wunused-private-field")
+#pragma clang diagnostic ignored "-Wunused-private-field"
+#endif
+#endif
 #include <QtGui/QMouseEvent>
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #include <QtOpenGL/QGLWidget>
 #include <Eigen>
 
