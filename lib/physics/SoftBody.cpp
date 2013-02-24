@@ -17,7 +17,7 @@ namespace
 const double EPSILON = 1e-6;
 
 bool
-load(const std::string& filename, std::vector<Vector3d>& positions)
+load(const std::string& filename, VectorList& positions)
 {
     std::ifstream file(filename.c_str());
     if (!file.is_open()) {
@@ -36,7 +36,7 @@ load(const std::string& filename, std::vector<Vector3d>& positions)
 
 template <typename T>
 void
-zero(std::vector<T>& list)
+zero(Collection<T>& list)
 {
 #ifdef PARALLEL
     QtConcurrent::blockingMap(list, [](T& x) { x.setZero(); });
@@ -63,6 +63,19 @@ identity(SoftBody::MatrixList& matrices)
         matrices.end(),
         [](Matrix3d& m) { m.setIdentity(); }
     );
+}
+
+double dot(const VectorList& a, const VectorList& b)
+{
+    assert(a.size() == b.size());
+
+    double result = 0;
+    for (size_t i = 0; i < a.size(); ++i) {
+        result += a[i](0) * b[i](0)
+                + a[i](1) * b[i](1)
+                + a[i](2) * b[i](2);
+    }
+    return result;
 }
 
 }
@@ -523,19 +536,20 @@ SoftBody::embed()
 
     // Initialize b
     uint32_t i = 0;
-    for (auto hood : neighborhoods) {
+    for (auto& hood : neighborhoods) {
         uint32_t j = 0;
         for (auto& n : hood) {
             b[i + j] = n.w * n.u;
             ++j;
         }
+        // Fill in what remains with zeros.
         for (; j < Neighborhood::MAX_SIZE; ++j) {
             b[i + j].setZero();
         }
         i += Neighborhood::MAX_SIZE;
     }
 
-    cgSolve(x, b);
+    //cgSolve(x, b);
 
 //    // Each row has n elements in it 
 //    CompressedRowBlockMatrix P(particles.size());
@@ -581,13 +595,29 @@ SoftBody::embed()
 }
 
 void
-SoftBody::applyMatrix(const SoftBody::VectorList& x, SoftBody::VectorList& result)
+SoftBody::applyMatrix(const VectorList& x, VectorList& result)
 {
     assert(result.size() == Neighborhood::MAX_SIZE * size());
     assert(x.size() == size());
+
+    uint32_t i = 0;
+    auto u_it = posRest.begin();
+    for (auto& hood : neighborhoods) {
+        uint32_t j = 0;
+        for (auto& n : hood) {
+            result[i + j] = n.w * (posRest[n.index] - *u_it);
+            ++j;
+        }
+        // Fill in what remains with zeros.
+        for (; j < Neighborhood::MAX_SIZE; ++j) {
+            result[i + j].setZero();
+        }
+        i += Neighborhood::MAX_SIZE;
+        ++u_it;
+    }
 }
 
-SoftBody::VectorList
+VectorList
 SoftBody::applyMatrix(const VectorList& x)
 {
     assert(x.size() == size());
@@ -604,7 +634,7 @@ SoftBody::applyMatrixTranspose(const VectorList& x, VectorList& result)
     assert(x.size() == Neighborhood::MAX_SIZE * size());
 }
 
-SoftBody::VectorList
+VectorList
 SoftBody::applyMatrixTranspose(const VectorList& x)
 {
     assert(x.size() == Neighborhood::MAX_SIZE * size());
@@ -620,7 +650,43 @@ SoftBody::cgSolve(VectorList& x, const VectorList& b)
     assert(x.size() == size());
     assert(b.size() == Neighborhood::MAX_SIZE * size());
 
-    VectorList Ax = applyMatrix(x);
+    // r=b-A*x;
+    VectorList r = applyMatrixTranspose(b) - applyMatrixTranspose(applyMatrix(x));
+    VectorList p(r);
+    double rsold = dot(r, r);
+
+    for (uint32_t i = 0; i < 100; ++i) {
+        VectorList Ap = applyMatrixTranspose(applyMatrix(p));
+        double alpha = rsold / (dot(p, Ap));
+
+        // x += alpha * p;
+        auto x_it = x.begin();
+        auto p_it = p.begin();
+        for (; x_it != x.end(); ++x_it, ++p_it) {
+            *x_it += alpha * *p_it;
+        }
+
+        // r -= alpha * Ap;
+        auto r_it = r.begin();
+        auto Ap_it = Ap.begin();
+        for (; r_it != r.end(); ++r_it, ++Ap_it) {
+            *r_it -= alpha * *Ap_it;
+        }
+
+        double rsnew = dot(r, r);
+        if (sqrt(rsnew) < 1e-10) {
+            break;
+        }
+
+        // p = r + (rsnew / rsold) * p;
+        p_it = p.begin();
+        r_it = r.begin();
+        for (; p_it != p.end(); ++p_it) {
+            *p_it = *r_it + (rsnew / rsold) * *p_it;
+        }
+
+        rsold = rsnew;
+    }
     /*
     function [x] = conjgrad(A,b,x)
         r=b-A*x;

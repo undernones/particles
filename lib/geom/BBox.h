@@ -2,7 +2,7 @@
 #define GEOM_BBOX_H
 
 #include <Eigen>
-#include <vector>
+#include "VectorList.h"
 
 class BBox
 {
@@ -15,7 +15,7 @@ public:
     bool contains(const Eigen::Vector3d& p) const;
     void add(const BBox& other);
     void add(const Eigen::Vector3d& p);
-    void add(const std::vector<Eigen::Vector3d>& points);
+    void add(const VectorList& points);
 
     Eigen::Vector3d center() const;
 };

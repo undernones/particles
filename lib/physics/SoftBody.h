@@ -6,13 +6,13 @@
 #include <tbb/tbb.h>
 #include <geom/BBox.h>
 #include <geom/Neighborhood.h>
+#include <geom/VectorList.h>
 #include "Material.h"
 
 class Mesh;
 class SoftBody
 {
 public:
-    typedef std::vector<Eigen::Vector3d> VectorList;
     typedef std::vector<Eigen::Matrix3d> MatrixList;
     typedef Eigen::JacobiSVD<Eigen::Matrix3d, Eigen::NoQRPreconditioner> Svd;
     typedef std::vector<Svd> SvdList;

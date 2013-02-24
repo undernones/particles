@@ -41,7 +41,7 @@ BBox::add(const Eigen::Vector3d& p)
 }
 
 void
-BBox::add(const std::vector<Eigen::Vector3d>& points)
+BBox::add(const VectorList& points)
 {
     for (auto& p : points) {
         add(p);

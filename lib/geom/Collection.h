@@ -17,6 +17,11 @@ public:
     {
     }
 
+    explicit Collection(size_t n)
+    {
+        resize(n);
+    }
+
     explicit Collection(const Collection& other)
     {
         mItems = other.mItems;
@@ -45,6 +50,7 @@ public:
     inline unsigned max_size() const { return mItems.max_size(); }
     inline unsigned capacity() const { return mItems.capacity(); }
     inline bool empty()        const { return mItems.empty(); }
+    inline void resize(unsigned n)   { mItems.resize(n); }
     inline void reserve(unsigned n)  { mItems.reserve(n); }
 
     inline T&       operator[](unsigned n)       { return mItems[n]; }

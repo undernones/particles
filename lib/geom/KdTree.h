@@ -28,6 +28,7 @@
 
 #include <vector>
 #include <Eigen>
+#include "VectorList.h"
 
 class IntDoublePair
 {
@@ -49,7 +50,7 @@ class KdTree
 {
 private:
     typedef Eigen::Vector3d Point;
-    typedef std::vector<Point> PointList;
+    typedef VectorList PointList;
 
 public:
 	// Initialize kdtree for point in pts.  The points are *not* duplicated.
