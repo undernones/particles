@@ -530,7 +530,7 @@ SoftBody::embed()
     // x:   3N
     // b:   96N
 
-    uint32_t m = Neighborhood::MAX_SIZE * size();
+    uint32_t m = Neighborhood::MAX_SIZE * size() + 1;
 
     VectorList x(posRest);
     VectorList b(m);
@@ -549,6 +549,7 @@ SoftBody::embed()
         }
         i += Neighborhood::MAX_SIZE;
     }
+    b[m - 1] = posRest[0];
 
     cgSolve(x, b);
     for (uint32_t i = 0; i < x.size(); ++i) {
@@ -575,6 +576,7 @@ SoftBody::applyMatrix(const VectorList& x, VectorList& result)
         i += Neighborhood::MAX_SIZE;
         ++x_it;
     }
+    result[result.size()-1] = x[0];
 }
 
 VectorList
@@ -606,6 +608,7 @@ SoftBody::applyMatrixTranspose(const VectorList& x, VectorList& result)
         }
         ++i;
     }
+    result[0] += x[x.size()-1];
 }
 
 VectorList
