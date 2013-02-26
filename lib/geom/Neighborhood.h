@@ -17,8 +17,13 @@ public:
     double computeSum();
     double sum() const;
 
+    bool isDirty() const { return mIsDirty; }
+    void setDirty() { mIsDirty = true; }
+    void setClean() { mIsDirty = false; }
+
 private:
     double mSum;
+    bool mIsDirty;
 };
 
 #endif // GEOM_NEIGHBORHOOD_H

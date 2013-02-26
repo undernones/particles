@@ -3,7 +3,8 @@
 const uint32_t Neighborhood::MAX_SIZE = 16;
 
 Neighborhood::Neighborhood() : Collection<Neighbor>()
-,   mSum(0)
+    , mSum(0)
+    , mIsDirty(false)
 {
     reserve(MAX_SIZE);
 }
