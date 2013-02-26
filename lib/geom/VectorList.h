@@ -11,9 +11,13 @@ public:
     VectorList(size_t n);
     VectorList(const VectorList& other);
     ~VectorList();
+
+    void setZero();
 };
 
+VectorList& operator +=(VectorList& lhs, const VectorList& rhs);
 VectorList operator +(const VectorList& lhs, const VectorList& rhs);
+VectorList& operator -=(VectorList& lhs, const VectorList& rhs);
 VectorList operator -(const VectorList& lhs, const VectorList& rhs);
 VectorList operator *(double k, const VectorList& rhs);
 
