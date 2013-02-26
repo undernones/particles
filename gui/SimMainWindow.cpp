@@ -35,7 +35,10 @@ SimMainWindow::setSoftBody(const SoftBody* body)
         matrix = &body->bases[0];
     }
 
-    ui->glWidget->setBody(body);
+    ui->glWidgetWorld->setSpace(SimGlWidget::World);
+    ui->glWidgetWorld->setBody(body);
+    ui->glWidgetRest->setSpace(SimGlWidget::Rest);
+    ui->glWidgetRest->setBody(body);
     ui->matrixViewer->setMatrix(matrix);
 }
 
@@ -54,7 +57,8 @@ SimMainWindow::resumed()
 void
 SimMainWindow::stepped()
 {
-    ui->glWidget->update();
+    ui->glWidgetWorld->update();
+    ui->glWidgetRest->update();
 
     // Only update the matrix viewer if we are stepping interactively.
     if (SimThread::instance().isPaused()) {

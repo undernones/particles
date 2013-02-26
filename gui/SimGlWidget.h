@@ -4,15 +4,19 @@
 #include "GlWidget.h"
 
 class SoftBody;
+class VectorList;
 class SimGlWidget : public GlWidget
 {
     Q_OBJECT
 
 public:
+    typedef enum { World, Rest } Space;
+
     explicit SimGlWidget(QWidget* parent = nullptr);
     virtual ~SimGlWidget();
 
-    void setBody(const SoftBody* body) { mBody = body; }
+    void setBody(const SoftBody* body);
+    void setSpace(Space space) { mSpace = space; }
     bool select(uint32_t index);
 
 protected:
@@ -22,6 +26,8 @@ protected:
 
 private:
     const SoftBody* mBody;
+    Space mSpace;
+    const VectorList* mPositions;
 
     GLuint mSphereSolid;
     GLuint mSphereWire;

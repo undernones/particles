@@ -25,11 +25,13 @@ Vector3d rainbow[] = {
 }
 
 SimGlWidget::SimGlWidget(QWidget* parent)
-:   GlWidget(parent)
-,   mBody(NULL)
-,   mSphereSolid(MAX_UINT)
-,   mSphereWire(MAX_UINT)
-,   mSelected(MAX_UINT)
+    : GlWidget(parent)
+    , mBody(nullptr)
+    , mSpace(World)
+    , mPositions(nullptr)
+    , mSphereSolid(MAX_UINT)
+    , mSphereWire(MAX_UINT)
+    , mSelected(MAX_UINT)
 {
 }
 
@@ -80,13 +82,15 @@ SimGlWidget::mousePressEvent(QMouseEvent* event)
 void
 SimGlWidget::renderBody() const
 {
-    if (mBody == NULL) return;
+    if (mBody == nullptr || mPositions == nullptr) {
+        return;
+    }
 
     bool hasSelected = mSelected < mBody->size();
 
     // Draw points
     uint32_t index = 0;
-    for (auto& p : mBody->posWorld) {
+    for (auto& p : *mPositions) {
         Eigen::Vector3d color = rainbow[index % 7];
         if (hasSelected) {
             color *= 0.2;
@@ -124,11 +128,9 @@ SimGlWidget::renderBody() const
     }
 
     if (hasSelected && true) { // TODO: view neighborhoods
-        //const Vector3d& basePos = mBody->posWorld[mSelected];
-
         glDisable(GL_LIGHTING);
         for (auto& n : mBody->neighborhoods[mSelected]) {
-            const Vector3d& x = mBody->posWorld[n.index];
+            const Vector3d& x = (*mPositions)[n.index];
 
             glPushMatrix();
             glTranslated(x[0], x[1], x[2]);
@@ -137,39 +139,35 @@ SimGlWidget::renderBody() const
             glPopMatrix();
         }
         glEnable(GL_LIGHTING);
-
-        /*
-        BOOST_FOREACH (const Neighbor &neighbor, particles[mSelectedIndex].neighbors) {
-            const Particle &n = particles[neighbor.index];
-            const SlVector3 &pos = (mSpace == World) ? n.worldPos : n.materialPos;
-
-            glPushMatrix();
-            glTranslated(pos[0], pos[1], pos[2]);
-            glColor3d(1, 1, 0.6);
-            glCallList(mSphereWire);
-            glPopMatrix();
-
-            if (mVectors != ParticleViewer::NoVectors) {
-                glLineWidth(2);
-                SlVector3 neighborLoc = basePos + neighbor.u;
-                glColor3d(1, 0, 0);
-                glBegin(GL_LINES);
-                glVertex3d(basePos[0], basePos[1], basePos[2]);
-                glVertex3d(neighborLoc[0], neighborLoc[1], neighborLoc[2]);
-                glEnd();
-            }
-        }
-        */
     }
 
-    if (true && mBody->hasMesh()) { // TODO: show mesh
+    if (true && mSpace == World && mBody->hasMesh()) { // TODO: show mesh
         renderMesh(*mBody->mesh());
+    }
+}
+
+void
+SimGlWidget::setBody(const SoftBody* body)
+{
+    mBody = body;
+    if (mBody == nullptr) {
+        return;
+    }
+
+    if (mSpace == World) {
+        mPositions = &mBody->posWorld;
+    } else {
+        mPositions = &mBody->posRest;
     }
 }
 
 uint32_t
 SimGlWidget::select(const QPoint& clickPt) const
 {
+    if (mBody == nullptr || mPositions == nullptr) {
+        return MAX_UINT;
+    }
+
     // http://nehe.gamedev.net/data/articles/article.asp?article=13
 
     GLdouble modelview[16];
@@ -189,7 +187,7 @@ SimGlWidget::select(const QPoint& clickPt) const
     gluUnProject(winX, winY, winZ, modelview, projection, viewport, &pos[0], &pos[1], &pos[2]);
 
     uint32_t index = 0;
-    for (auto x : mBody->posWorld) {
+    for (auto x : *mPositions) {
         if ((x - pos).norm() < SPHERE_SIZE + WIRE_OFFSET) {
             return index;
         }

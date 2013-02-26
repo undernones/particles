@@ -20,7 +20,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="SimGlWidget" name="glWidget" native="true">
+      <widget class="SimGlWidget" name="glWidgetWorld" native="true">
        <property name="minimumSize">
         <size>
          <width>300</width>
@@ -30,6 +30,9 @@
       </widget>
       <widget class="QWidget" name="widget" native="true">
        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="SimGlWidget" name="glWidgetRest" native="true"/>
+        </item>
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
@@ -127,15 +130,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SimGlWidget</class>
-   <extends>GlWidget</extends>
-   <header>SimGlWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>MatrixViewer</class>
    <extends>QWidget</extends>
    <header>MatrixViewer.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SimGlWidget</class>
+   <extends>QWidget</extends>
+   <header>SimGlWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
