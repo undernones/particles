@@ -105,7 +105,9 @@ Mesh::loadObj(const std::string& filename, Mesh& mesh)
         }
     }
 
-    return true;
+    return mesh.mVerts.size() == vertCount
+        && mesh.mFaces.size() == faceCount
+        ;
 }
 
 bool
