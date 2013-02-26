@@ -15,6 +15,7 @@ namespace
 {
 
 const double EPSILON = 1e-6;
+const uint32_t MAX_CG_ITERATIONS = 10;
 
 bool
 load(const std::string& filename, VectorList& positions)
@@ -103,10 +104,10 @@ SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
     identity(bases);
 
     velocities.resize(size);
-    zero(velocities);
+    velocities.setZero();
 
     accels.resize(size);
-    zero(accels);
+    accels.setZero();
 
     forces.resize(size);
 
@@ -549,49 +550,10 @@ SoftBody::embed()
         i += Neighborhood::MAX_SIZE;
     }
 
-    //cgSolve(x, b);
-
-//    // Each row has n elements in it 
-//    CompressedRowBlockMatrix P(particles.size());
-//    std::vector<SlVector3> rhs(0);
-//
-//    // First guess at new positions is the old positions
-//    std::vector<SlVector3> newPos(particles.size());
-//
-//    size_t row = 0;
-//    BOOST_FOREACH (const Particle &p, particles) {
-//        newPos[p.index] = p.materialPos;
-//
-//        BOOST_FOREACH (const Neighbor &n, p.neighbors){
-//            /*std::vector<double> rowData(2);
-//            std::vector<size_t> rowIndices(2,0);
-//            rowIndices[0] = n.index;
-//            rowIndices[1] = p.index;
-//            rowData[0] = w_ij;
-//            rowData[1] = -w_ij;
-//            P.addRow(rowIndices, rowData);*/
-//	    rhs.push_back(n.u * n.w_ij);
-//	    ++row;
-//        }
-//    }
-//
-//    // Fix particle 0's position to remove some degrees of freedom
-//    /*std::vector<double> lastRowData(1,1);
-//    std::vector<size_t> lastRowIndex(1,0);
-//    P.addRow(lastRowIndex, lastRowData);*/
-//    rhs.push_back(particles[0].materialPos);
-//
-//
-//    std::vector<SlVector3> b(particles.size(), SlVector3(0.0));
-//    P.mulVectorTransposeImplicit(rhs, b);
-//
-//    //CompressedRowBlockMatrix PTP = P.formATA();
-//    //PTP.pcgSolve(b, newPos);
-//    //P.pcgSolve(b, newPos);
-//    P.cgSolve(b, newPos, rhs.size());  //not using the preconditioner anyway
-//    for (size_t i = 0; i < particles.size(); ++i) {
-//        particles[i].materialPos = newPos[i];
-//    }
+    cgSolve(x, b);
+    for (uint32_t i = 0; i < x.size(); ++i) {
+        posRest[i] = x[i];
+    }
 }
 
 void
@@ -600,20 +562,18 @@ SoftBody::applyMatrix(const VectorList& x, VectorList& result)
     assert(result.size() == Neighborhood::MAX_SIZE * size());
     assert(x.size() == size());
 
+    result.setZero();
+
     uint32_t i = 0;
-    auto u_it = posRest.begin();
+    auto x_it = x.begin();
     for (auto& hood : neighborhoods) {
         uint32_t j = 0;
         for (auto& n : hood) {
-            result[i + j] = n.w * (posRest[n.index] - *u_it);
+            result[i + j] = n.w * (x[n.index] - *x_it);
             ++j;
         }
-        // Fill in what remains with zeros.
-        for (; j < Neighborhood::MAX_SIZE; ++j) {
-            result[i + j].setZero();
-        }
         i += Neighborhood::MAX_SIZE;
-        ++u_it;
+        ++x_it;
     }
 }
 
@@ -632,6 +592,20 @@ SoftBody::applyMatrixTranspose(const VectorList& x, VectorList& result)
 {
     assert(result.size() == size());
     assert(x.size() == Neighborhood::MAX_SIZE * size());
+
+    result.setZero();
+
+    uint32_t i = 0;
+    for (auto& hood : neighborhoods) {
+        uint32_t col = i * Neighborhood::MAX_SIZE;
+        for (auto& n : hood) {
+            auto v = n.w * x[col];
+            result[i] -= v;
+            result[n.index] += v;
+            ++col;
+        }
+        ++i;
+    }
 }
 
 VectorList
@@ -650,62 +624,24 @@ SoftBody::cgSolve(VectorList& x, const VectorList& b)
     assert(x.size() == size());
     assert(b.size() == Neighborhood::MAX_SIZE * size());
 
-    // r=b-A*x;
     VectorList r = applyMatrixTranspose(b) - applyMatrixTranspose(applyMatrix(x));
     VectorList p(r);
     double rsold = dot(r, r);
 
-    for (uint32_t i = 0; i < 100; ++i) {
+    for (uint32_t i = 0; i < MAX_CG_ITERATIONS; ++i) {
         VectorList Ap = applyMatrixTranspose(applyMatrix(p));
         double alpha = rsold / (dot(p, Ap));
 
-        // x += alpha * p;
-        auto x_it = x.begin();
-        auto p_it = p.begin();
-        for (; x_it != x.end(); ++x_it, ++p_it) {
-            *x_it += alpha * *p_it;
-        }
-
-        // r -= alpha * Ap;
-        auto r_it = r.begin();
-        auto Ap_it = Ap.begin();
-        for (; r_it != r.end(); ++r_it, ++Ap_it) {
-            *r_it -= alpha * *Ap_it;
-        }
+        x += alpha * p;
+        r -= alpha * Ap;
 
         double rsnew = dot(r, r);
         if (sqrt(rsnew) < 1e-10) {
-            break;
+            return;
         }
 
-        // p = r + (rsnew / rsold) * p;
-        p_it = p.begin();
-        r_it = r.begin();
-        for (; p_it != p.end(); ++p_it) {
-            *p_it = *r_it + (rsnew / rsold) * *p_it;
-        }
-
+        p = r + (rsnew / rsold) * p;
         rsold = rsnew;
     }
-    /*
-    function [x] = conjgrad(A,b,x)
-        r=b-A*x;
-        p=r;
-        rsold=r'*r;
-     
-        for i=1:10000000
-            Ap=A*p;
-            alpha=rsold/(p'*Ap);
-            x=x+alpha*p;
-            r=r-alpha*Ap;
-            rsnew=r'*r;
-            if sqrt(rsnew)<1e-10
-                  break;
-            end
-            p=r+rsnew/rsold*p;
-            rsold=rsnew;
-        end
-    end
-    */
 }
 
