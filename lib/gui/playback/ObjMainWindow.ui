@@ -84,7 +84,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/images/resources/step-forward-normal.png</normaloff>:/images/resources/step-forward-normal.png</iconset>
    </property>
    <property name="text">
@@ -105,7 +105,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/images/resources/pause-normal.png</normaloff>
      <normalon>:/images/resources/play-normal.png</normalon>:/images/resources/pause-normal.png</iconset>
    </property>
@@ -121,7 +121,7 @@
   </action>
   <action name="actionPrevious">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/images/resources/step-backward-normal.png</normaloff>:/images/resources/step-backward-normal.png</iconset>
    </property>
    <property name="text">
@@ -136,7 +136,7 @@
   </action>
   <action name="actionRewind">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/images/resources/first-normal.png</normaloff>:/images/resources/first-normal.png</iconset>
    </property>
    <property name="text">
@@ -154,12 +154,12 @@
   <customwidget>
    <class>ObjGlWidget</class>
    <extends>QWidget</extends>
-   <header>ObjGlWidget.h</header>
+   <header>gui/playback/ObjGlWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="images.qrc"/>
+  <include location="../images.qrc"/>
  </resources>
  <connections>
   <connection>

@@ -1,7 +1,7 @@
 #ifndef GUI_OBJGLWIDGET_H
 #define GUI_OBJGLWIDGET_H
 
-#include "GlWidget.h"
+#include <gui/GlWidget.h>
 
 class Mesh;
 class ObjGlWidget : public GlWidget

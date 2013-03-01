@@ -1,7 +1,7 @@
 #ifndef GUI_SIMGLWIDGET_H
 #define GUI_SIMGLWIDGET_H
 
-#include "GlWidget.h"
+#include <gui/GlWidget.h>
 
 class SoftBody;
 class VectorList;

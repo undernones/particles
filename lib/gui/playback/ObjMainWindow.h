@@ -1,5 +1,5 @@
-#ifndef QT_OBJMAINWINDOW_H
-#define QT_OBJMAINWINDOW_H
+#ifndef GUI_PLAYBACK_OBJMAINWINDOW_H
+#define GUI_PLAYBACK_OBJMAINWINDOW_H
 
 #include <QtGui/QMainWindow>
 
@@ -31,4 +31,4 @@ public slots:
     void frameLoaded();
 };
 
-#endif // QT_OBJMAINWINDOW_H
+#endif // GUI_PLAYBACK_OBJMAINWINDOW_H

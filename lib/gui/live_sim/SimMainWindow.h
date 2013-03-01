@@ -1,5 +1,5 @@
-#ifndef QT_SIMMAINWINDOW_H
-#define QT_SIMMAINWINDOW_H
+#ifndef LIVESIM_MAINWINDOW_H
+#define LIVESIM_MAINWINDOW_H
 
 #include <QtGui/QMainWindow>
 
@@ -24,4 +24,4 @@ public slots:
     void stepped();
 };
 
-#endif // QT_SIMMAINWINDOW_H
+#endif // LIVESIM_MAINWINDOW_H

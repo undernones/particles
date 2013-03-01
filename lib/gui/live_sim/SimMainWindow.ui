@@ -95,7 +95,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/images/resources/step-forward-normal.png</normaloff>:/images/resources/step-forward-normal.png</iconset>
    </property>
    <property name="text">
@@ -113,7 +113,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/images/resources/pause-normal.png</normaloff>
      <normalon>:/images/resources/play-normal.png</normalon>:/images/resources/pause-normal.png</iconset>
    </property>
@@ -132,18 +132,18 @@
   <customwidget>
    <class>MatrixViewer</class>
    <extends>QWidget</extends>
-   <header>MatrixViewer.h</header>
+   <header>gui/MatrixViewer.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>SimGlWidget</class>
    <extends>QWidget</extends>
-   <header>SimGlWidget.h</header>
+   <header>gui/live_sim/SimGlWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="images.qrc"/>
+  <include location="../images.qrc"/>
  </resources>
  <connections/>
 </ui>

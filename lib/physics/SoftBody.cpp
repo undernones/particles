@@ -259,9 +259,10 @@ SoftBody::updateState(double dt)
 #endif
     gatherForces();
 
-    // TODO: We only need to embed if some neighborhood had some plastic
-    // deformation of anything other than Identity.
+    // TODO: We only need to embed and update neighorhoods if some neighborhood
+    // had some plastic deformation of anything other than Identity.
     embed();
+    updateNeighborhoods();
 }
 
 void
@@ -331,6 +332,8 @@ SoftBody::updateRadii()
 void
 SoftBody::updateRestQuantities(uint32_t lo, uint32_t hi)
 {
+    // TODO: If there hasn't been any plastic deformation, this can probably be
+    // skipped.
     auto x_it = posWorld.begin() + lo;
     auto u_it = posRest.begin() + lo;
     auto n_it = neighborhoods.begin() + lo;

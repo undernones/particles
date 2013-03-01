@@ -4,7 +4,7 @@
 #include <simulator/FrameSaver.h>
 #include <simulator/SimThread.h>
 #include <simulator/World.h>
-#include "SimMainWindow.h"
+#include <gui/live_sim/SimMainWindow.h>
 #include "../Options.h" // TODO: dependencies!
 
 int

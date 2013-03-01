@@ -1,6 +1,6 @@
 #include <QtGui/QApplication>
-#include "ObjLoadThread.h"
-#include "ObjMainWindow.h"
+#include <gui/playback/ObjLoadThread.h>
+#include <gui/playback/ObjMainWindow.h>
 
 int
 main(int argc, char* argv[])

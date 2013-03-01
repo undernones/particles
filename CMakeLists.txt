@@ -25,6 +25,7 @@ endif()
 include_directories(
     .
     lib
+    build
     /opt/local/include/eigen3/Eigen
     /opt/local/include
     /usr/local/include
@@ -33,6 +34,10 @@ link_directories(
     /opt/local/lib
     /usr/local/lib
 )
+
+find_library(GL_LIBRARY OpenGL)
+find_library(GLUT_LIBRARY GLUT)
+set(GL_LIBS ${GL_LIBRARY} ${GLUT_LIBRARY})
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -46,10 +51,10 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
     add_definitions(-DNDEBUG)
 endif ()
 
-set(CMAKE_AUTOMOC ON)
 set(QT_USE_QTOPENGL TRUE)
 
-set (GEOM_SRC
+# Geometry
+set(GEOM_SRC
     lib/geom/BBox.cpp
     lib/geom/KdTree.cpp
     lib/geom/Mesh.cpp
@@ -61,7 +66,8 @@ set (GEOM_SRC
 )
 add_library(geom ${GEOM_SRC})
 
-set (PHYSICS_SRC
+# Physics
+set(PHYSICS_SRC
     lib/physics/Obstacle.cpp
     lib/physics/PlaneObstacle.cpp
     lib/physics/SoftBody.cpp
@@ -69,22 +75,74 @@ set (PHYSICS_SRC
 add_library(physics ${PHYSICS_SRC})
 target_link_libraries(physics geom tbb)
 
-set (SIM_SRC
+# Basic simulation
+set(SIM_SRC
     lib/simulator/FrameSaver.cpp
     lib/simulator/SimThread.cpp
     lib/simulator/World.cpp
 )
 add_library(simulator ${SIM_SRC})
 target_link_libraries(simulator physics geom)
+set_target_properties(simulator PROPERTIES AUTOMOC TRUE)
 
-set (CORE_SRC
+# Generic GUI
+set(GUI_SRC
+    lib/gui/GlWidget.cpp
+    lib/gui/MatrixViewer.cpp
+)
+set(GUI_FORMS lib/gui/MatrixViewer.ui)
+set(RESOURCES lib/gui/images.qrc)
+qt4_wrap_ui(GUI_FORMS_HEADERS ${GUI_FORMS})
+qt4_add_resources(RESOURCES_RCC ${RESOURCES})
+
+add_library(gui ${GUI_SRC} ${GUI_FORMS_HEADERS})
+target_link_libraries(gui ${GL_LIBS} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARY})
+set_target_properties(gui PROPERTIES AUTOMOC TRUE)
+
+# Live interactive simulator GUI
+set(LIVE_SIM_SRC
+    lib/gui/live_sim/SimMainWindow.cpp
+    lib/gui/live_sim/SimGlWidget.cpp
+)
+set(LIVE_SIM_FORMS lib/gui/live_sim/SimMainWindow.ui)
+qt4_wrap_ui(LIVE_SIM_FORMS_HEADERS ${LIVE_SIM_FORMS})
+
+add_library(live_sim ${LIVE_SIM_SRC} ${LIVE_SIM_FORMS_HEADERS})
+target_link_libraries(live_sim gui)
+set_target_properties(live_sim PROPERTIES AUTOMOC TRUE)
+
+# Obj File Playback GUI
+set(PLAYBACK_SRC
+    lib/gui/playback/MeshSet.cpp
+    lib/gui/playback/ObjGlWidget.cpp
+    lib/gui/playback/ObjLoadThread.cpp
+    lib/gui/playback/ObjMainWindow.cpp
+)
+set(PLAYBACK_FORMS lib/gui/playback/ObjMainWindow.ui)
+qt4_wrap_ui(PLAYBACK_FORMS_HEADERS ${PLAYBACK_FORMS})
+
+add_library(playback ${PLAYBACK_SRC} ${PLAYBACK_FORMS_HEADERS})
+target_link_libraries(playback gui)
+set_target_properties(playback PROPERTIES AUTOMOC TRUE)
+
+# Headless simulator cmd
+set(CORE_SRC
     Options.cpp
     Utils.cpp
 )
-add_executable(headless main.cpp ${CORE_SRC})
+add_executable(headless cmd/headless/main.cpp ${CORE_SRC})
 target_link_libraries(headless physics geom simulator ${QT_LIBRARIES})
+set_target_properties(headless PROPERTIES AUTOMOC TRUE)
 
-add_subdirectory(gui)
+# Interactive GUI simulator cmd
+add_executable(interactive cmd/interactive/main.cpp Options.cpp)
+target_link_libraries(interactive gui live_sim simulator)
+set_target_properties(interactive PROPERTIES AUTOMOC TRUE)
+
+# OBJ playback GUI cmd
+add_executable(obj_play cmd/obj_play/main.cpp)
+target_link_libraries(obj_play playback geom)
+set_target_properties(obj_play PROPERTIES AUTOMOC TRUE)
 
 message(STATUS)
 message(STATUS "--------------------------------------------------------------------------------")
