@@ -5,12 +5,10 @@ Makefile
 tags
 
 # binaries
-headless
-gui/gui
-gui/objplay
+build/headless
+build/interactive
+build/obj_play
 *.a
-a.out
-accordion
 
 hours.txt
 
