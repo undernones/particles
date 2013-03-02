@@ -1,11 +1,11 @@
 #include <QtGui/QApplication>
 #include <geom/Mesh.h>
+#include <gui/live_sim/SimMainWindow.h>
 #include <physics/SoftBody.h>
 #include <simulator/FrameSaver.h>
+#include <simulator/Options.h>
 #include <simulator/SimThread.h>
 #include <simulator/World.h>
-#include <gui/live_sim/SimMainWindow.h>
-#include "../Options.h" // TODO: dependencies!
 
 int
 main(int argc, char* argv[])
@@ -31,10 +31,8 @@ main(int argc, char* argv[])
     w.raise();
     w.show();
 
-    FrameSaver saver(*body, Options::framesDir(), Options::dt(), Options::fps());
-    if (body->mesh() != nullptr) {
-        saver.connect(&thread, SIGNAL(stepped()), SLOT(stepped()));
-    }
+    FrameSaver saver;
+    saver.connect(&thread, SIGNAL(stepped()), SLOT(stepped()));
 
     thread.init(Options::duration(), Options::dt());
     thread.start(QThread::NormalPriority);

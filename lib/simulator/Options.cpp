@@ -16,7 +16,7 @@ std::string OPT_meshFile;
 double OPT_dt = 1.0 / 120;
 uint32_t OPT_fps = 30;
 double OPT_duration = 10;
-uint32_t OPT_framesPerChkpt = 10;
+uint32_t OPT_framesPerChkpt = 1;
 double OPT_density = 1000;
 double OPT_lambda = 8000;
 double OPT_mu = 8000;

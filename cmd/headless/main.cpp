@@ -3,9 +3,9 @@
 #include <stdexcept>
 #include <physics/SoftBody.h>
 #include <simulator/FrameSaver.h>
+#include <simulator/Options.h>
 #include <simulator/SimThread.h>
 #include <simulator/World.h>
-#include "Options.h"
 #include "Utils.h"
 
 int
@@ -19,11 +19,8 @@ main(int argc, char* argv[])
 
     SimThread& thread(SimThread::instance());
 
-    const SoftBody* body = World::bodies()[0];
-    FrameSaver saver(*body, Options::framesDir(), Options::dt(), Options::fps());
-    if (body->mesh() != nullptr) {
-        saver.connect(&thread, SIGNAL(stepped()), SLOT(stepped()));
-    }
+    FrameSaver saver;
+    saver.connect(&thread, SIGNAL(stepped()), SLOT(stepped()));
 
     uint32_t totalSteps = Options::duration() / Options::dt();
     std::cout << "Duration:    " << Options::duration() << "s" << std::endl

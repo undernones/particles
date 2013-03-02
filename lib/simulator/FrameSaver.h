@@ -3,20 +3,15 @@
 
 #include <QtCore/QObject>
 
-class SoftBody;
 class FrameSaver : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit FrameSaver(const SoftBody& body, const std::string& framesDir, double dt, double fps);
+    explicit FrameSaver();
     ~FrameSaver();
 
 private:
-    const SoftBody& mBody;
-    std::string mFramesDir;
-    double mDt;
-    double mFps;
     double mElapsed;
     double mSpf;
     uint32_t mFrame;

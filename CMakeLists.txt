@@ -10,9 +10,9 @@ project(particles)
 # Otherwise set CMAKE_BUILD_TYPE to Debug prior to calling project().
 #
 if (DEFINED CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the build type.  Options are: Debug, Release")
+    set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the build type. Options are: Debug, Release")
 else()
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the build type.  Options are: Debug, Release")
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the build type. Options are: Debug, Release")
 endif()
 
 find_package(Qt4 REQUIRED)
@@ -78,6 +78,7 @@ target_link_libraries(physics geom tbb)
 # Basic simulation
 set(SIM_SRC
     lib/simulator/FrameSaver.cpp
+    lib/simulator/Options.cpp
     lib/simulator/SimThread.cpp
     lib/simulator/World.cpp
 )
@@ -127,7 +128,6 @@ set_target_properties(playback PROPERTIES AUTOMOC TRUE)
 
 # Headless simulator cmd
 set(CORE_SRC
-    Options.cpp
     Utils.cpp
 )
 add_executable(headless cmd/headless/main.cpp ${CORE_SRC})
@@ -135,7 +135,7 @@ target_link_libraries(headless physics geom simulator ${QT_LIBRARIES})
 set_target_properties(headless PROPERTIES AUTOMOC TRUE)
 
 # Interactive GUI simulator cmd
-add_executable(interactive cmd/interactive/main.cpp Options.cpp)
+add_executable(interactive cmd/interactive/main.cpp)
 target_link_libraries(interactive gui live_sim simulator)
 set_target_properties(interactive PROPERTIES AUTOMOC TRUE)
 
