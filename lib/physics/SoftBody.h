@@ -57,26 +57,8 @@ private:
     class ForceProcessor
     {
     public:
-        ForceProcessor(SoftBody& body, double dt)
-            : mBody(body)
-            , mDt(dt)
-        {}
-
-        void operator ()(const tbb::blocked_range<uint32_t> r) const
-        {
-            uint32_t lo = r.begin();
-            uint32_t hi = r.end();
-
-            mBody.updateRestQuantities(lo, hi);
-            mBody.clearForces(lo, hi);
-            mBody.computeFs(lo, hi);
-            mBody.computeGammas(lo, hi, mDt);
-            mBody.decomposeFs(lo, hi);
-            mBody.computeStrains(lo, hi);
-            mBody.computeStresses(lo, hi);
-            mBody.computeForces(lo, hi);
-            mBody.applyPlasticDef(lo, hi);
-        }
+        ForceProcessor(SoftBody& body, double dt);
+        void operator ()(const tbb::blocked_range<uint32_t> r) const;
 
     private:
         SoftBody& mBody;
@@ -87,14 +69,8 @@ private:
     class MeshProcessor
     {
     public:
-        MeshProcessor(SoftBody& body)
-            : mBody(body)
-        {}
-
-        void operator ()(const tbb::blocked_range<uint32_t> r) const
-        {
-            mBody.updateMesh(r.begin(), r.end());
-        }
+        MeshProcessor(SoftBody& body);
+        void operator ()(const tbb::blocked_range<uint32_t> r) const;
 
     private:
         SoftBody& mBody;

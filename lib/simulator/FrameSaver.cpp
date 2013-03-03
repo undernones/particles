@@ -4,15 +4,6 @@
 #include "Options.h"
 #include "World.h"
 
-namespace
-{
-
-void saveCheckPoint()
-{
-}
-
-}
-
 FrameSaver::FrameSaver() : QObject()
 {
     mElapsed = std::numeric_limits<double>::max();

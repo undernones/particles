@@ -7,8 +7,6 @@
 #include "kernels.h"
 #include "../Utils.h" // TODO: dependencies!
 
-#define PARALLEL
-
 using namespace Eigen;
 
 namespace
@@ -39,31 +37,19 @@ template <typename T>
 void
 zero(Collection<T>& list)
 {
-#ifdef PARALLEL
     QtConcurrent::blockingMap(list, [](T& x) { x.setZero(); });
-#else
-    for_each (list.begin(), list.end(), [](T& x) { x.setZero(); });
-#endif
 }
 
 void
 zero(std::vector<double>& list)
 {
-#ifdef PARALLEL
     QtConcurrent::blockingMap(list, [](double& x) { x = 0; });
-#else
-    for_each (list.begin(), list.end(), [](double& x) { x = 0; });
-#endif
 }
 
 void
 identity(SoftBody::MatrixList& matrices)
 {
-    for_each (
-        matrices.begin(),
-        matrices.end(),
-        [](Matrix3d& m) { m.setIdentity(); }
-    );
+    QtConcurrent::blockingMap(matrices, [](Matrix3d& m) { m.setIdentity(); });
 }
 
 double dot(const VectorList& a, const VectorList& b)
@@ -80,6 +66,42 @@ double dot(const VectorList& a, const VectorList& b)
 }
 
 }
+
+// --------------------------------------------------------------------------
+
+SoftBody::ForceProcessor::ForceProcessor(SoftBody& body, double dt)
+    : mBody(body)
+    , mDt(dt)
+{}
+
+void
+SoftBody::ForceProcessor::operator ()(const tbb::blocked_range<uint32_t> r) const
+{
+    uint32_t lo = r.begin();
+    uint32_t hi = r.end();
+
+    mBody.updateRestQuantities(lo, hi);
+    mBody.clearForces(lo, hi);
+    mBody.computeFs(lo, hi);
+    mBody.computeGammas(lo, hi, mDt);
+    mBody.decomposeFs(lo, hi);
+    mBody.computeStrains(lo, hi);
+    mBody.computeStresses(lo, hi);
+    mBody.computeForces(lo, hi);
+    mBody.applyPlasticDef(lo, hi);
+}
+
+SoftBody::MeshProcessor::MeshProcessor(SoftBody& body)
+    : mBody(body)
+{}
+
+void
+SoftBody::MeshProcessor::operator ()(const tbb::blocked_range<uint32_t> r) const
+{
+    mBody.updateMesh(r.begin(), r.end());
+}
+
+// --------------------------------------------------------------------------
 
 SoftBody::SoftBody(const std::string& positionsFile, const Material& material) :
     mBBox(),
@@ -174,14 +196,10 @@ SoftBody::updateMesh()
 {
     if (mMesh == nullptr) return;
 
-#ifdef PARALLEL
     tbb::parallel_for(
         tbb::blocked_range<uint32_t>(0, mMesh->verts().size()),
         MeshProcessor(*this)
     );
-#else
-    updateMesh(0, mMesh->verts().size());
-#endif
     //mMesh->updateNormals();
 }
 
@@ -221,42 +239,31 @@ void
 SoftBody::clearForces(uint32_t lo, uint32_t hi)
 {
     // Clear the forces on each particle.
-    for_each (
+    QtConcurrent::blockingMap(
         forces.begin() + lo,
         forces.begin() + hi,
         [](Vector3d& f) { f.setZero(); }
     );
 
     // And clear the temporary forces stored in neighborhoods.
-    auto h_it = neighborhoods.begin() + lo;
-    auto end = neighborhoods.begin() + hi;
-
-    for (; h_it != end; ++h_it) {
-        for (auto& n : *h_it) {
-            n.f.setZero();
+    QtConcurrent::blockingMap(
+        neighborhoods.begin() + lo,
+        neighborhoods.begin() + hi,
+        [](Neighborhood& hood) {
+            for (auto& n : hood) {
+                n.f.setZero();
+            }
         }
-    }
+    );
 }
 
 void
 SoftBody::updateState(double dt)
 {
-#ifdef PARALLEL
     tbb::parallel_for(
         tbb::blocked_range<uint32_t>(0, size()),
         ForceProcessor(*this, dt)
     );
-#else
-    updateRestQuantities(0, size());
-    clearForces(0, size());
-    computeFs(0, size());
-    computeGammas(0, size(), dt);
-    decomposeFs(0, size());
-    computeStrains(0, size());
-    computeStresses(0, size());
-    applyPlasticDef(0, size());
-    computeForces(0, size());
-#endif
     gatherForces();
 
     // TODO: We only need to embed and update neighorhoods if some neighborhood
