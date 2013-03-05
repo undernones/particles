@@ -391,6 +391,10 @@ SoftBody::computeFs(uint32_t lo, uint32_t hi)
 void
 SoftBody::computeGammas(uint32_t lo, uint32_t hi, double dt)
 {
+    auto& flowRate = mMaterial.flowRate;
+    auto& yieldPoint = mMaterial.yieldPoint;
+    auto& hardening = mMaterial.hardening;
+
     auto s_it = stresses.begin() + lo;
     auto g_it = gammas.begin() + lo;
     auto a_it = alphas.begin() + lo;
@@ -399,12 +403,10 @@ SoftBody::computeGammas(uint32_t lo, uint32_t hi, double dt)
 
     for (; s_it != end; ++s_it, ++g_it, ++a_it) {
         auto stressNorm = s_it->norm();
-        auto& flowRate = mMaterial.flowRate;
-        auto& yieldPoint = mMaterial.yieldPoint;
 
         double gamma = 0;
         if (stressNorm > EPSILON) {
-            double k_alpha = mMaterial.hardening * *a_it;
+            double k_alpha = hardening * *a_it;
             gamma = flowRate * (stressNorm - yieldPoint - k_alpha) / stressNorm;
         }
         *g_it = Utils::clamp(gamma, 0, 1);
