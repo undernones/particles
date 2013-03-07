@@ -100,6 +100,18 @@ VectorList::setZero()
     QtConcurrent::blockingMap(*this, [](Vector3d& x) { x.setZero(); });
 }
 
+double
+VectorList::dot(const VectorList& other) const
+{
+    assert(size() == other.size());
+
+    double result = 0;
+    for (size_t i = 0; i < size(); ++i) {
+        result += (*this)[i].dot(other[i]);
+    }
+    return result;
+}
+
 // --------------------------------------------------------------------------
 
 VectorList&

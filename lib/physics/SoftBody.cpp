@@ -52,19 +52,6 @@ identity(SoftBody::MatrixList& matrices)
     QtConcurrent::blockingMap(matrices, [](Matrix3d& m) { m.setIdentity(); });
 }
 
-double dot(const VectorList& a, const VectorList& b)
-{
-    assert(a.size() == b.size());
-
-    double result = 0;
-    for (size_t i = 0; i < a.size(); ++i) {
-        result += a[i](0) * b[i](0)
-                + a[i](1) * b[i](1)
-                + a[i](2) * b[i](2);
-    }
-    return result;
-}
-
 }
 
 // --------------------------------------------------------------------------
@@ -239,14 +226,14 @@ void
 SoftBody::clearForces(uint32_t lo, uint32_t hi)
 {
     // Clear the forces on each particle.
-    QtConcurrent::blockingMap(
+    std::for_each(
         forces.begin() + lo,
         forces.begin() + hi,
         [](Vector3d& f) { f.setZero(); }
     );
 
     // And clear the temporary forces stored in neighborhoods.
-    QtConcurrent::blockingMap(
+    std::for_each(
         neighborhoods.begin() + lo,
         neighborhoods.begin() + hi,
         [](Neighborhood& hood) {
@@ -268,8 +255,8 @@ SoftBody::updateState(double dt)
 
     // TODO: We only need to embed and update neighorhoods if some neighborhood
     // had some plastic deformation of anything other than Identity.
-    embed();
-    updateNeighborhoods();
+    //embed();
+    //updateNeighborhoods();
 }
 
 void
@@ -572,7 +559,7 @@ SoftBody::embed()
 void
 SoftBody::applyMatrix(const VectorList& x, VectorList& result)
 {
-    assert(result.size() == Neighborhood::MAX_SIZE * size());
+    assert(result.size() == Neighborhood::MAX_SIZE * size() + 1);
     assert(x.size() == size());
 
     result.setZero();
@@ -596,7 +583,7 @@ SoftBody::applyMatrix(const VectorList& x)
 {
     assert(x.size() == size());
 
-    VectorList result(Neighborhood::MAX_SIZE * size());
+    VectorList result(Neighborhood::MAX_SIZE * size() + 1);
     applyMatrix(x, result);
     return result;
 }
@@ -605,7 +592,7 @@ void
 SoftBody::applyMatrixTranspose(const VectorList& x, VectorList& result)
 {
     assert(result.size() == size());
-    assert(x.size() == Neighborhood::MAX_SIZE * size());
+    assert(x.size() == Neighborhood::MAX_SIZE * size() + 1);
 
     result.setZero();
 
@@ -626,7 +613,7 @@ SoftBody::applyMatrixTranspose(const VectorList& x, VectorList& result)
 VectorList
 SoftBody::applyMatrixTranspose(const VectorList& x)
 {
-    assert(x.size() == Neighborhood::MAX_SIZE * size());
+    assert(x.size() == Neighborhood::MAX_SIZE * size() + 1);
 
     VectorList result(size());
     applyMatrixTranspose(x, result);
@@ -637,20 +624,20 @@ void
 SoftBody::cgSolve(VectorList& x, const VectorList& b)
 {
     assert(x.size() == size());
-    assert(b.size() == Neighborhood::MAX_SIZE * size());
+    assert(b.size() == Neighborhood::MAX_SIZE * size() + 1);
 
     VectorList r = applyMatrixTranspose(b) - applyMatrixTranspose(applyMatrix(x));
     VectorList p(r);
-    double rsold = dot(r, r);
+    double rsold = r.dot(r);
 
     for (uint32_t i = 0; i < MAX_CG_ITERATIONS; ++i) {
         VectorList Ap = applyMatrixTranspose(applyMatrix(p));
-        double alpha = rsold / (dot(p, Ap));
+        double alpha = rsold / p.dot(Ap);
 
         x += alpha * p;
         r -= alpha * Ap;
 
-        double rsnew = dot(r, r);
+        double rsnew = r.dot(r);
         if (sqrt(rsnew) < 1e-10) {
             return;
         }

@@ -13,6 +13,7 @@ public:
     ~VectorList();
 
     void setZero();
+    double dot(const VectorList& other) const;
 };
 
 VectorList& operator +=(VectorList& lhs, const VectorList& rhs);
