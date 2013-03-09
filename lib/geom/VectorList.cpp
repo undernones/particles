@@ -172,3 +172,12 @@ operator *(double k, const VectorList& rhs)
 
     return result;
 }
+
+std::ostream&
+operator <<(std::ostream& stream, const VectorList& list)
+{
+    for (auto& v : list) {
+        stream << " " << v.transpose();
+    }
+    return stream;
+}

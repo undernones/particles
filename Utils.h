@@ -28,6 +28,11 @@ inline double sign(double x)
     return (x < 0) ? -1 : 1;
 }
 
+inline bool isNan(double x)
+{
+    return x != x;
+}
+
 std::string makeRed(const std::string &s);
 void error(const std::string &s);
 std::string ftoa(double d, int decimalPlaces = 2);

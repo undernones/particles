@@ -37,6 +37,7 @@ template <typename T>
 void
 zero(Collection<T>& list)
 {
+    //tbb::parallel_for(0, list.size(), 1, [=](size_t i) { list[i].setZero(); });
     QtConcurrent::blockingMap(list, [](T& x) { x.setZero(); });
 }
 
@@ -226,22 +227,16 @@ void
 SoftBody::clearForces(uint32_t lo, uint32_t hi)
 {
     // Clear the forces on each particle.
-    std::for_each(
-        forces.begin() + lo,
-        forces.begin() + hi,
-        [](Vector3d& f) { f.setZero(); }
-    );
+    for (uint32_t i = lo; i < hi; ++i) {
+        forces[i].setZero();
+    }
 
     // And clear the temporary forces stored in neighborhoods.
-    std::for_each(
-        neighborhoods.begin() + lo,
-        neighborhoods.begin() + hi,
-        [](Neighborhood& hood) {
-            for (auto& n : hood) {
-                n.f.setZero();
-            }
+    for (uint32_t i = lo; i < hi; ++i) {
+        for (auto& n : neighborhoods[i]) {
+            n.f.setZero();
         }
-    );
+    }
 }
 
 void
@@ -255,8 +250,8 @@ SoftBody::updateState(double dt)
 
     // TODO: We only need to embed and update neighorhoods if some neighborhood
     // had some plastic deformation of anything other than Identity.
-    //embed();
-    //updateNeighborhoods();
+    embed();
+    updateNeighborhoods();
 }
 
 void
@@ -623,6 +618,8 @@ SoftBody::applyMatrixTranspose(const VectorList& x)
 void
 SoftBody::cgSolve(VectorList& x, const VectorList& b)
 {
+    static const double TOLERANCE = 1e-10;
+
     assert(x.size() == size());
     assert(b.size() == Neighborhood::MAX_SIZE * size() + 1);
 
@@ -630,7 +627,7 @@ SoftBody::cgSolve(VectorList& x, const VectorList& b)
     VectorList p(r);
     double rsold = r.dot(r);
 
-    for (uint32_t i = 0; i < MAX_CG_ITERATIONS; ++i) {
+    for (uint32_t i = 0; rsold > TOLERANCE && i < MAX_CG_ITERATIONS; ++i) {
         VectorList Ap = applyMatrixTranspose(applyMatrix(p));
         double alpha = rsold / p.dot(Ap);
 
@@ -638,7 +635,7 @@ SoftBody::cgSolve(VectorList& x, const VectorList& b)
         r -= alpha * Ap;
 
         double rsnew = r.dot(r);
-        if (sqrt(rsnew) < 1e-10) {
+        if (rsnew < TOLERANCE) {
             return;
         }
 

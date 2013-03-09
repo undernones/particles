@@ -1,6 +1,7 @@
 #ifndef GEOM_VECTORLIST_H
 #define GEOM_VECTORLIST_H
 
+#include <iostream>
 #include <Eigen>
 #include "Collection.h"
 
@@ -21,5 +22,7 @@ VectorList operator +(const VectorList& lhs, const VectorList& rhs);
 VectorList& operator -=(VectorList& lhs, const VectorList& rhs);
 VectorList operator -(const VectorList& lhs, const VectorList& rhs);
 VectorList operator *(double k, const VectorList& rhs);
+
+std::ostream& operator <<(std::ostream& stream, const VectorList& list);
 
 #endif // GEOM_VECTORLIST_H
